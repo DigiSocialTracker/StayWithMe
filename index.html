@@ -2376,7 +2376,7 @@
 
 
 /* ==========================================================================
-   SUPABASE CLIENT & AUTH CONFIGURATION
+   SUPABASE CLIENT & AUTH CONFIGURATION (SECURE - NO EXPOSED EMAILS)
    ========================================================================== */
 const SUPABASE_URL = "https://cuftxvaapzkcdbioqlgz.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_hDS3z0qZDsdwdOJjfS40oA_wenAe5yL";
@@ -2384,19 +2384,6 @@ const SUPABASE_ANON_KEY = "sb_publishable_hDS3z0qZDsdwdOJjfS40oA_wenAe5yL";
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 let currentUser = null;
 
-// 1. AUTHORIZED EMAILS WHITELIST (lowercase)
-const ALLOWED_EMAILS = [
-  "your.email@gmail.com",
-  "teammate.email@gmail.com"
-];
-
-// Helper: Check authorization
-function isEmailAuthorized(email) {
-  if (!email) return false;
-  return ALLOWED_EMAILS.includes(email.toLowerCase().trim());
-}
-
-// Helper: Show error on login overlay
 function showAuthError(msg) {
   const box = document.getElementById('authErrorMessage');
   const txt = document.getElementById('authErrorText');
@@ -2406,7 +2393,7 @@ function showAuthError(msg) {
   }
 }
 
-// 2. Google OAuth Sign-In
+// 1. Google OAuth Sign-In
 async function signInWithGoogle() {
   document.getElementById('authErrorMessage')?.classList.add('hidden');
   const { error } = await sb.auth.signInWithOAuth({
@@ -2420,29 +2407,51 @@ async function signInWithGoogle() {
   }
 }
 
-// 3. Sign-Out
+// 2. Sign-Out
 async function signOutUser() {
   await sb.auth.signOut();
   window.location.reload();
+}
+
+// 3. Secure Verification Against Supabase Database
+async function verifyUserAuthorization(user) {
+  try {
+    const userEmail = (user.email || '').toLowerCase().trim();
+
+    // Query Supabase: Is THIS user's email in the allowed table?
+    const { data, error } = await sb
+      .from('allowed_members')
+      .select('email')
+      .eq('email', userEmail)
+      .maybeSingle();
+
+    if (error || !data) {
+      // User is authenticated with Google, but NOT an authorized team member
+      await sb.auth.signOut();
+      currentUser = null;
+      document.getElementById('authOverlay').classList.remove('hidden');
+      document.getElementById('userProfileArea').classList.add('hidden');
+      showAuthError(`Access Denied: ${userEmail} is not registered in the team access list.`);
+      return false;
+    }
+
+    return true;
+  } catch (err) {
+    console.error("Verification error:", err);
+    await sb.auth.signOut();
+    showAuthError("Authentication check failed. Please try again.");
+    return false;
+  }
 }
 
 // 4. Session Verification & Auth State Observer
 async function initAuthAndData() {
   async function handleSession(session) {
     if (session && session.user) {
-      const userEmail = (session.user.email || '').toLowerCase().trim();
+      // Verify against database without exposing any emails in frontend code
+      const isAllowed = await verifyUserAuthorization(session.user);
+      if (!isAllowed) return;
 
-      // STRICT VERIFICATION: Reject if email is not whitelisted
-      if (!isEmailAuthorized(userEmail)) {
-        await sb.auth.signOut();
-        currentUser = null;
-        document.getElementById('authOverlay').classList.remove('hidden');
-        document.getElementById('userProfileArea').classList.add('hidden');
-        showAuthError(`Access Denied: ${userEmail} is not authorized.`);
-        return;
-      }
-
-      // Approved user
       currentUser = session.user;
       document.getElementById('authErrorMessage')?.classList.add('hidden');
       setupUserUI(session.user);

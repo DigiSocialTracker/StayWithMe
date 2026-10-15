@@ -95,6 +95,11 @@
       <p class="flex items-center gap-2"><i class="fa-solid fa-shield-halved text-emerald-400"></i> Secure cloud database via Supabase</p>
       <p class="flex items-center gap-2"><i class="fa-solid fa-arrows-rotate text-sky-400"></i> Real-time multi-device collaboration</p>
     </div>
+<!-- Add this error message container above the sign in button -->
+    <div id="authErrorMessage" class="hidden mb-4 p-3 rounded-xl bg-rose-950/80 border border-rose-500/60 text-xs text-rose-200 text-left flex items-start gap-2">
+      <i class="fa-solid fa-triangle-exclamation text-rose-400 mt-0.5 shrink-0"></i>
+      <span id="authErrorText">Access Denied: Your email is not authorized.</span>
+    </div>
 
     <!-- Sign In With Google Button -->
     <button id="googleSignInBtn" onclick="signInWithGoogle()" class="w-full flex items-center justify-center gap-3 px-5 py-3.5 bg-white hover:bg-slate-100 text-slate-900 font-semibold rounded-xl transition shadow-md hover:shadow-lg active:scale-[0.99]">
@@ -2374,13 +2379,36 @@
    SUPABASE CLIENT & AUTH CONFIGURATION
    ========================================================================== */
 const SUPABASE_URL = "https://cuftxvaapzkcdbioqlgz.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_hDS3z0qZDsdwdOJjfS40oA_wenAe5yL"; // <-- PASTE YOUR KEY HERE
+const SUPABASE_ANON_KEY = "sb_publishable_hDS3z0qZDsdwdOJjfS40oA_wenAe5yL";
 
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 let currentUser = null;
 
-// 1. Google OAuth Sign-In
+// 1. AUTHORIZED EMAILS WHITELIST (lowercase)
+const ALLOWED_EMAILS = [
+  "your.email@gmail.com",
+  "teammate.email@gmail.com"
+];
+
+// Helper: Check authorization
+function isEmailAuthorized(email) {
+  if (!email) return false;
+  return ALLOWED_EMAILS.includes(email.toLowerCase().trim());
+}
+
+// Helper: Show error on login overlay
+function showAuthError(msg) {
+  const box = document.getElementById('authErrorMessage');
+  const txt = document.getElementById('authErrorText');
+  if (box && txt) {
+    txt.textContent = msg;
+    box.classList.remove('hidden');
+  }
+}
+
+// 2. Google OAuth Sign-In
 async function signInWithGoogle() {
+  document.getElementById('authErrorMessage')?.classList.add('hidden');
   const { error } = await sb.auth.signInWithOAuth({
     provider: 'google',
     options: {
@@ -2392,18 +2420,31 @@ async function signInWithGoogle() {
   }
 }
 
-// 2. Sign-Out
+// 3. Sign-Out
 async function signOutUser() {
   await sb.auth.signOut();
   window.location.reload();
 }
 
-// 3. Auth State Observer & Session Setup
+// 4. Session Verification & Auth State Observer
 async function initAuthAndData() {
-  // Listen for login/logout changes
-  sb.auth.onAuthStateChange(async (event, session) => {
+  async function handleSession(session) {
     if (session && session.user) {
+      const userEmail = (session.user.email || '').toLowerCase().trim();
+
+      // STRICT VERIFICATION: Reject if email is not whitelisted
+      if (!isEmailAuthorized(userEmail)) {
+        await sb.auth.signOut();
+        currentUser = null;
+        document.getElementById('authOverlay').classList.remove('hidden');
+        document.getElementById('userProfileArea').classList.add('hidden');
+        showAuthError(`Access Denied: ${userEmail} is not authorized.`);
+        return;
+      }
+
+      // Approved user
       currentUser = session.user;
+      document.getElementById('authErrorMessage')?.classList.add('hidden');
       setupUserUI(session.user);
       await syncDataFromSupabase();
       listenForRealtimeChanges();
@@ -2412,22 +2453,17 @@ async function initAuthAndData() {
       document.getElementById('authOverlay').classList.remove('hidden');
       document.getElementById('userProfileArea').classList.add('hidden');
     }
+  }
+
+  sb.auth.onAuthStateChange(async (event, session) => {
+    await handleSession(session);
   });
 
-  // Check initial active session
   const { data: { session } } = await sb.auth.getSession();
-  if (session && session.user) {
-    currentUser = session.user;
-    setupUserUI(session.user);
-    await syncDataFromSupabase();
-    listenForRealtimeChanges();
-  } else {
-    document.getElementById('authOverlay').classList.remove('hidden');
-    document.getElementById('userProfileArea').classList.add('hidden');
-  }
+  await handleSession(session);
 }
 
-// Update Top Bar with User Info
+// 5. Update Top Bar with User Info
 function setupUserUI(user) {
   document.getElementById('authOverlay').classList.add('hidden');
   const userArea = document.getElementById('userProfileArea');

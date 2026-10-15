@@ -1,1 +1,2321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Islamic History Multi-Language Video Social Media Calendar</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- SheetJS for Excel Import/Export -->
+  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+  <!-- Chart.js for Visual Analytics -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Amiri:wght@400;700&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap');
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #090d16;
+      color: #f1f5f9;
+    }
+    .font-arabic {
+      font-family: 'Amiri', serif;
+    }
+    .font-hindi {
+      font-family: 'Noto Sans Devanagari', sans-serif;
+    }
+    /* Custom sleek scrollbars */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+    .calendar-cell {
+      min-height: 110px;
+      transition: background-color 0.15s ease, border-color 0.15s ease;
+    }
+    .wednesday-cell {
+      background: linear-gradient(180deg, rgba(245, 158, 11, 0.06) 0%, rgba(15, 23, 42, 0.85) 100%);
+    }
+    .wednesday-header {
+      background: linear-gradient(180deg, rgba(245, 158, 11, 0.22) 0%, rgba(245, 158, 11, 0.06) 100%);
+      border-bottom: 2px solid #f59e0b;
+    }
+    /* Friday Mild Red Background Fill */
+    .friday-cell {
+      background: linear-gradient(180deg, rgba(244, 63, 94, 0.20) 0%, rgba(159, 18, 57, 0.14) 100%) !important;
+      border-color: rgba(244, 63, 94, 0.35) !important;
+    }
+    .friday-cell:hover {
+      background: linear-gradient(180deg, rgba(244, 63, 94, 0.28) 0%, rgba(159, 18, 57, 0.20) 100%) !important;
+    }
+    .friday-header {
+      background: linear-gradient(180deg, rgba(244, 63, 94, 0.32) 0%, rgba(225, 29, 72, 0.16) 100%) !important;
+      border-bottom: 2px solid #f43f5e !important;
+      color: #fda4af !important;
+    }
+    .filter-btn.active {
+      background-color: #059669;
+      color: #ffffff;
+      border-color: #10b981;
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+    }
+    .filter-btn-gold.active {
+      background-color: #d97706;
+      color: #ffffff;
+      border-color: #f59e0b;
+      box-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
+    }
+  </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden bg-slate-950 text-slate-100">
 
+  <!-- Top App Bar -->
+  <header class="bg-slate-900 border-b border-slate-800 px-4 py-2 shrink-0 flex flex-wrap items-center justify-between gap-3 shadow-md z-20">
+    <div class="flex items-center space-x-3">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 via-teal-500 to-amber-400 flex items-center justify-center shadow-lg shadow-emerald-950/60 text-slate-950 text-xl font-bold">
+        <i class="fa-solid fa-moon"></i>
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="text-base sm:text-lg font-extrabold text-slate-50 tracking-tight leading-tight">Islamic History Media Hub</h1>
+          <span class="text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1">
+            <i class="fa-solid fa-crown text-[9px]"></i> Sheet 2: 3-Week Calendar
+          </span>
+        </div>
+        <p class="text-[11px] text-slate-400 hidden sm:block">
+          Starts Saturday • Wednesday Main Video Highlight • Arabic (Primary) | English | Hindi
+        </p>
+      </div>
+    </div>
+
+    <!-- Quick action toolbars -->
+    <div class="flex items-center gap-2 flex-wrap">
+      <!-- Date Shift Tool Button -->
+      <button onclick="openShiftModal()" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/30 transition flex items-center gap-1.5 shadow-sm">
+        <i class="fa-solid fa-calendar-week"></i>
+        <span>Shift Dates</span>
+      </button>
+
+      <!-- New Entry Button -->
+      <button onclick="openEditModal(null)" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-900/40 transition flex items-center gap-1.5">
+        <i class="fa-solid fa-plus"></i>
+        <span>Add Content</span>
+      </button>
+
+      <!-- Export dropdown -->
+      <div class="relative inline-block text-left" id="exportMenuWrapper">
+        <button onclick="toggleDropdown('exportDropdown')" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-file-export text-slate-400"></i>
+          <span>Export</span>
+          <i class="fa-solid fa-chevron-down text-[10px]"></i>
+        </button>
+        <div id="exportDropdown" class="hidden absolute right-0 mt-2 w-56 rounded-xl shadow-2xl bg-slate-800 border border-slate-700 z-50 py-1 divide-y divide-slate-700 text-xs">
+          <button onclick="exportToExcel()" class="w-full text-left px-4 py-2.5 hover:bg-slate-700 text-emerald-400 flex items-center gap-2 font-medium">
+            <i class="fa-solid fa-file-excel text-emerald-500 text-sm"></i> 
+            <div>
+              <div class="font-bold">Export Excel (.xlsx)</div>
+              <div class="text-[10px] text-slate-400">Columns A–Z formatted</div>
+            </div>
+          </button>
+          <button onclick="exportToJSON()" class="w-full text-left px-4 py-2.5 hover:bg-slate-700 text-blue-400 flex items-center gap-2 font-medium">
+            <i class="fa-solid fa-file-code text-blue-500 text-sm"></i>
+            <div>
+              <div class="font-bold">Export JSON (.json)</div>
+              <div class="text-[10px] text-slate-400">Full schema backup</div>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Import trigger -->
+      <label class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex items-center gap-1.5 cursor-pointer transition">
+        <i class="fa-solid fa-file-import text-slate-400"></i>
+        <span>Import</span>
+        <input type="file" id="importFileInput" accept=".xlsx,.xls,.json" class="hidden" onchange="handleFileImport(event)">
+      </label>
+
+      <!-- Reset data to default -->
+      <button onclick="resetToOriginalData()" title="Reset to original 3-Week dataset" class="p-2 text-xs rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 border border-slate-700 transition">
+        <i class="fa-solid fa-rotate"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- Metric Pipeline Counter Bar -->
+  <div class="bg-slate-900/90 border-b border-slate-800 px-4 py-1.5 flex flex-wrap items-center justify-between gap-3 shrink-0 text-xs">
+    <div class="flex items-center gap-3 overflow-x-auto min-w-max py-0.5">
+      <div class="flex items-center gap-1.5">
+        <span class="text-slate-400">Total Posts:</span>
+        <span id="metricTotal" class="font-bold text-slate-100 bg-slate-800 px-2 py-0.5 rounded border border-slate-700">0</span>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-full bg-amber-400 inline-block"></span>
+        <span class="text-slate-400">Wed Main Videos:</span>
+        <span id="metricMainWed" class="font-bold text-amber-300 bg-amber-950/40 px-2 py-0.5 rounded border border-amber-800/50">0</span>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-full bg-pink-500 inline-block"></span>
+        <span class="text-slate-400">Stories:</span>
+        <span id="metricStories" class="font-bold text-pink-300 bg-pink-950/40 px-2 py-0.5 rounded border border-pink-800/50">0</span>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>
+        <span class="text-slate-400">Done:</span>
+        <span id="metricDone" class="font-bold text-emerald-400 bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-800/50">0</span>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-full bg-blue-500 inline-block"></span>
+        <span class="text-slate-400">Scheduled:</span>
+        <span id="metricScheduled" class="font-bold text-blue-400 bg-blue-950/40 px-2 py-0.5 rounded border border-blue-800/50">0</span>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-full bg-purple-500 inline-block"></span>
+        <span class="text-slate-400">In Progress:</span>
+        <span id="metricInProgress" class="font-bold text-purple-300 bg-purple-950/40 px-2 py-0.5 rounded border border-purple-800/50">0</span>
+      </div>
+    </div>
+
+    <!-- Quick Search -->
+    <div class="flex items-center gap-2 min-w-[220px] max-w-xs ml-auto">
+      <div class="relative w-full">
+        <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-2 text-slate-500 text-xs"></i>
+        <input type="text" id="searchInput" oninput="handleSearch(this.value)" placeholder="Search Arabic title, English, KSA time..." class="w-full bg-slate-800 text-slate-200 placeholder-slate-500 text-xs rounded-lg pl-8 pr-3 py-1.5 border border-slate-700 focus:outline-none focus:border-amber-400">
+      </div>
+    </div>
+  </div>
+
+  <main class="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
+
+    <!-- LEFT COLUMN: Desktop Calendar View (Week starts Saturday, Wed Highlighted, Fri Mild Red) -->
+    <section class="lg:w-7/12 w-full flex flex-col border-b lg:border-b-0 lg:border-r border-slate-800 h-1/2 lg:h-full bg-slate-900/30">
+      
+      <!-- Calendar Controls and Button-Group Filters -->
+      <div class="p-2.5 bg-slate-900 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2 shrink-0">
+        <div class="flex items-center gap-2">
+          <div class="flex items-center bg-slate-800 rounded-lg p-0.5 border border-slate-700">
+            <button onclick="changeMonth(-1)" class="px-2 py-1 text-slate-300 hover:text-white rounded hover:bg-slate-700 transition" title="Previous Month">
+              <i class="fa-solid fa-chevron-left text-xs"></i>
+            </button>
+            <button onclick="jumpToCurrentMonth()" class="px-2.5 py-1 text-xs font-semibold text-slate-200 hover:bg-slate-700 rounded transition">
+              Active Month
+            </button>
+            <button onclick="changeMonth(1)" class="px-2 py-1 text-slate-300 hover:text-white rounded hover:bg-slate-700 transition" title="Next Month">
+              <i class="fa-solid fa-chevron-right text-xs"></i>
+            </button>
+          </div>
+          <h2 id="calendarMonthTitle" class="text-xs sm:text-sm font-bold text-slate-100 min-w-[120px]">November 2024</h2>
+        </div>
+
+        <!-- BUTTON-GROUP FILTERS: Live Riyadh Time, Statuses, and Types (Language filters removed) -->
+        <div class="flex items-center gap-2 flex-wrap">
+          <!-- Live Riyadh (KSA) Date & Time Indicator -->
+          <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-950/40 border border-emerald-500/30 text-emerald-300 text-[11px] font-mono shadow-sm">
+            <span class="flex h-1.5 w-1.5 relative">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+            </span>
+            <span class="text-slate-400 font-sans text-[10px]">Riyadh:</span>
+            <span id="riyadhDateDisplay" class="font-bold">Thu, Oct 15</span>
+            <span class="text-emerald-500">•</span>
+            <span id="riyadhTimeDisplay" class="font-bold text-amber-300">14:22:19</span>
+          </div>
+
+          <!-- Status button group -->
+          <div class="inline-flex rounded-lg bg-slate-800/90 p-0.5 border border-slate-700 text-[11px]" role="group" id="statusButtonGroup">
+            <button onclick="setStatusFilter('ALL')" data-status="ALL" class="filter-btn-gold active px-2 py-0.5 rounded font-semibold transition">All</button>
+            <button onclick="setStatusFilter('Done')" data-status="Done" class="filter-btn-gold px-2 py-0.5 rounded font-semibold transition text-emerald-400">Done</button>
+            <button onclick="setStatusFilter('Scheduled')" data-status="Scheduled" class="filter-btn-gold px-2 py-0.5 rounded font-semibold transition text-blue-400">Scheduled</button>
+            <button onclick="setStatusFilter('In Progress')" data-status="In Progress" class="filter-btn-gold px-2 py-0.5 rounded font-semibold transition text-purple-400">In Progress</button>
+          </div>
+
+          <!-- Type button group -->
+          <div class="inline-flex rounded-lg bg-slate-800/90 p-0.5 border border-slate-700 text-[11px]" role="group" id="typeButtonGroup">
+            <button onclick="setTypeFilter('ALL')" data-type="ALL" class="filter-btn active px-2 py-0.5 rounded font-semibold transition">All Types</button>
+            <button onclick="setTypeFilter('Main Video')" data-type="Main Video" class="filter-btn px-2 py-0.5 rounded font-semibold transition text-amber-300">
+              <i class="fa-solid fa-clapperboard text-[10px]"></i> Main
+            </button>
+            <button onclick="setTypeFilter('Story')" data-type="Story" class="filter-btn px-2 py-0.5 rounded font-semibold transition text-pink-300">
+              <i class="fa-solid fa-circle-notch text-[10px]"></i> Story
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Calendar Header Row (Starts Saturday, Wed Highlighted, Fri Mild Red) -->
+      <div class="grid grid-cols-7 bg-slate-900 border-b border-slate-800 text-center text-[10px] font-bold uppercase tracking-wider shrink-0 select-none">
+        <div class="py-2 text-slate-300">Sat (السبت)</div>
+        <div class="py-2 text-slate-400">Sun (الأحد)</div>
+        <div class="py-2 text-slate-400">Mon (الإثنين)</div>
+        <div class="py-2 text-slate-400">Tue (الثلاثاء)</div>
+        <div class="py-2 text-amber-300 wednesday-header flex items-center justify-center gap-1 shadow-inner">
+          <i class="fa-solid fa-crown text-[10px] text-amber-400"></i>
+          <span>Wed / الأربعاء</span>
+        </div>
+        <div class="py-2 text-slate-400">Thu (الخميس)</div>
+        <div class="py-2 friday-header flex items-center justify-center gap-1 shadow-inner">
+          <i class="fa-solid fa-mosque text-[10px] text-rose-300"></i>
+          <span>Fri / الجمعة</span>
+        </div>
+      </div>
+
+      <!-- Calendar Days Grid (Starts Saturday) -->
+      <div id="calendarGrid" class="flex-1 grid grid-cols-7 auto-rows-fr gap-px bg-slate-800/80 p-px overflow-y-auto">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Calendar Legend Footer -->
+      <div class="p-2 bg-slate-900 border-t border-slate-800 flex items-center justify-between text-[10px] text-slate-400 flex-wrap gap-2 shrink-0">
+        <div class="flex items-center gap-3 flex-wrap">
+          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span> <i class="fa-solid fa-clapperboard text-[9px] text-amber-400"></i> Main Video (Wed)</span>
+          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span> Friday (الجمعة)</span>
+          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-pink-500"></span> <i class="fa-solid fa-circle-notch text-[9px] text-pink-400"></i> Story</span>
+          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> <i class="fa-solid fa-film text-[9px] text-emerald-400"></i> Short / Reel</span>
+        </div>
+        <div class="flex items-center gap-2 text-amber-400 font-semibold">
+          <span><i class="fa-solid fa-clock text-[10px]"></i> KSA Times</span>
+          <span>•</span>
+          <span><i class="fa-solid fa-copy text-[10px]"></i> 1-Click Copy</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="lg:w-5/12 w-full flex flex-col h-1/2 lg:h-full bg-slate-900/60 overflow-hidden">
+      
+      <!-- Right Navigation Tabs -->
+      <div class="flex items-center justify-between bg-slate-900 border-b border-slate-800 px-3 pt-2 shrink-0">
+        <div class="flex space-x-1" role="tablist">
+          <button onclick="switchTab('ganttTab')" id="tabBtn-ganttTab" class="tab-btn px-3 py-1.5 text-xs font-bold rounded-t-lg border-b-2 border-emerald-500 text-emerald-400 bg-slate-800/60 flex items-center gap-1.5">
+            <i class="fa-solid fa-chart-gantt"></i>
+            <span>Gantt Chart</span>
+          </button>
+          <button onclick="switchTab('analyticsTab')" id="tabBtn-analyticsTab" class="tab-btn px-3 py-1.5 text-xs font-semibold rounded-t-lg border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-1.5">
+            <i class="fa-solid fa-chart-pie"></i>
+            <span>Analytics</span>
+          </button>
+          <button onclick="switchTab('feedTab')" id="tabBtn-feedTab" class="tab-btn px-3 py-1.5 text-xs font-semibold rounded-t-lg border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-1.5">
+            <i class="fa-solid fa-table-list"></i>
+            <span>3-Week Table (<span id="tableCountBadge">0</span>)</span>
+          </button>
+        </div>
+
+        <button onclick="openEditModal(null)" class="text-xs text-amber-400 hover:text-amber-300 font-semibold py-1 px-2.5 bg-amber-500/10 border border-amber-500/30 rounded-md transition flex items-center gap-1">
+          <i class="fa-solid fa-plus-circle"></i> New Content
+        </button>
+      </div>
+
+      <!-- Tab Content Area -->
+      <div class="flex-1 overflow-y-auto p-3.5 space-y-3">
+        
+        <!-- 1. GANTT TIMELINE WITH TODAY DATE SLIDER & LIVE MARKER LINE -->
+        <div id="ganttTab" class="tab-panel block space-y-3">
+          <div class="flex items-center justify-between flex-wrap gap-2 bg-slate-800/70 p-2 rounded-xl border border-slate-700/60">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold text-slate-300">Gantt Scale:</span>
+              <div class="inline-flex rounded-lg bg-slate-900 p-0.5 border border-slate-700 text-xs">
+                <button onclick="setGanttFilter('month')" id="ganttFilterMonth" class="px-2.5 py-1 rounded font-semibold bg-emerald-600 text-white transition">This Month (Default)</button>
+                <button onclick="setGanttFilter('week')" id="ganttFilterWeek" class="px-2.5 py-1 rounded font-semibold text-slate-400 hover:text-white transition">This Week</button>
+              </div>
+            </div>
+            
+            <div class="flex items-center gap-2.5 text-[10px] text-slate-400">
+              <span class="flex items-center gap-1"><span class="w-2 h-2 rounded bg-amber-500 inline-block"></span> Main Video</span>
+              <span class="flex items-center gap-1"><span class="w-2 h-2 rounded bg-pink-500 inline-block"></span> Story</span>
+              <span class="flex items-center gap-1"><span class="w-2 h-2 rounded bg-emerald-500 inline-block"></span> Done</span>
+              <span class="flex items-center gap-1"><span class="w-2 h-2 rounded bg-red-500 inline-block"></span> Today Marker</span>
+            </div>
+          </div>
+
+          <!-- Gantt Matrix Outer Scroll with current day line -->
+          <div class="bg-slate-900/90 rounded-xl border border-slate-800 p-2.5 shadow-inner overflow-x-auto relative min-h-[360px]">
+            <div id="ganttContent" class="min-w-[650px] relative">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. GRAPH ANALYTICS TAB -->
+        <div id="analyticsTab" class="tab-panel hidden space-y-3.5">
+          <div class="grid grid-cols-2 gap-3">
+            <div class="bg-slate-800/60 border border-slate-700/70 p-3 rounded-xl flex flex-col items-center">
+              <h3 class="text-xs font-bold text-slate-200 mb-2 self-start flex items-center gap-1.5">
+                <i class="fa-solid fa-chart-pie text-emerald-400"></i> Post Status Breakdown
+              </h3>
+              <div class="h-44 w-full flex items-center justify-center relative">
+                <canvas id="statusChart"></canvas>
+              </div>
+            </div>
+
+            <div class="bg-slate-800/60 border border-slate-700/70 p-3 rounded-xl flex flex-col items-center">
+              <h3 class="text-xs font-bold text-slate-200 mb-2 self-start flex items-center gap-1.5">
+                <i class="fa-solid fa-layer-group text-amber-400"></i> Content Type Distribution
+              </h3>
+              <div class="h-44 w-full flex items-center justify-center relative">
+                <canvas id="typeChart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-slate-800/60 border border-slate-700/70 p-3.5 rounded-xl">
+            <h3 class="text-xs font-bold text-slate-200 mb-2 flex items-center justify-between">
+              <span class="flex items-center gap-1.5"><i class="fa-solid fa-language text-purple-400"></i> Multi-Language Production Matrix</span>
+              <span class="text-[11px] text-slate-400 font-normal">Arabic (Primary) • English • Hindi</span>
+            </h3>
+            <div class="h-40 w-full relative">
+              <canvas id="languageChart"></canvas>
+            </div>
+          </div>
+
+          <div class="bg-gradient-to-r from-emerald-950/40 via-slate-800/80 to-amber-950/30 border border-emerald-700/30 p-3.5 rounded-xl text-xs space-y-1.5">
+            <div class="font-bold text-amber-300 flex items-center gap-1.5">
+              <i class="fa-solid fa-compass"></i> Campaign Status & Next Scheduled Video
+            </div>
+            <p id="analyticsInsightText" class="text-slate-300 text-xs leading-relaxed">
+              Analyzing production status...
+            </p>
+          </div>
+        </div>
+
+        <!-- 3. SPREADSHEET 3-WEEK TABLE TAB -->
+        <div id="feedTab" class="tab-panel hidden space-y-3">
+          <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow">
+            <div class="overflow-x-auto max-h-[500px]">
+              <table class="w-full text-left text-xs text-slate-300">
+                <thead class="bg-slate-800/90 text-slate-400 font-semibold uppercase text-[10px] tracking-wider sticky top-0 z-10 border-b border-slate-700">
+                  <tr>
+                    <th class="px-2.5 py-2.5">Date & Weekday</th>
+                    <th class="px-2.5 py-2.5">Type & Week</th>
+                    <th class="px-3 py-2.5">Title (Arabic & English)</th>
+                    <th class="px-2 py-2.5">KSA Post Times</th>
+                    <th class="px-2 py-2.5">Platforms</th>
+                    <th class="px-2 py-2.5">Status</th>
+                    <th class="px-2 py-2.5 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="tableContent" class="divide-y divide-slate-800/80">
+                  <!-- Rendered dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <div id="editModal" class="hidden fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-xl shadow-2xl p-4 sm:p-5 space-y-3.5 my-auto max-h-[94vh] flex flex-col">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between border-b border-slate-800 pb-2.5 shrink-0">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center text-sm">
+            <i class="fa-solid fa-pen-to-square"></i>
+          </div>
+          <div>
+            <h3 id="modalTitle" class="text-sm sm:text-base font-bold text-slate-100">Content Editor</h3>
+            <p class="text-[10px] text-slate-400">Edit scheduling, platforms, and localized content</p>
+          </div>
+        </div>
+        <button onclick="closeEditModal()" class="text-slate-400 hover:text-slate-200 text-lg transition p-1">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form id="postForm" onsubmit="savePost(event)" class="space-y-3.5 text-xs overflow-y-auto pr-1">
+        <!-- Hidden Background Fields for Columns A-Z Compatibility -->
+        <input type="hidden" id="postId">
+        <input type="hidden" id="postDayNumber">
+        <input type="hidden" id="postWeekday">
+        <input type="hidden" id="postWeekFigure">
+        <input type="hidden" id="postType" value="Main Video">
+        <input type="hidden" id="postIsMainVideo" value="false">
+        <input type="hidden" id="postStatus" value="Scheduled">
+        <input type="hidden" id="postFormat" value="16:9 Landscape Video">
+        <input type="hidden" id="postArabicTime" value="18:00">
+        <input type="hidden" id="postEnglishTime" value="18:30">
+        <input type="hidden" id="postHindiTime" value="19:00">
+        <input type="hidden" id="postStoryTime" value="14:00, 20:30">
+        <input type="hidden" id="postHookArabic">
+        <input type="hidden" id="postHookEnglish">
+        <input type="hidden" id="postStory1Plan">
+        <input type="hidden" id="postStory1Arabic">
+        <input type="hidden" id="postStory2Plan">
+        <input type="hidden" id="postStory2Arabic">
+        <input type="hidden" id="postChecklist">
+        <input type="hidden" id="postCTA">
+        <input type="hidden" id="postActionTask">
+        <input type="hidden" id="postKPI">
+
+        <!-- 1. TOP LANGUAGE FILTER TABS (AR, ENG, HINDI) -->
+        <div class="bg-slate-950/70 p-1 rounded-xl border border-slate-800 flex items-center gap-1.5 shrink-0">
+          <button type="button" id="modalLangBtn-AR" onclick="setModalLanguageTab('AR')" class="flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 bg-emerald-600 text-white shadow-sm">
+            <i class="fa-solid fa-language"></i>
+            <span class="font-arabic text-sm">العربية (AR)</span>
+            <span class="text-[9px] bg-emerald-800/80 px-1.5 py-0.5 rounded uppercase">Main</span>
+          </button>
+          <button type="button" id="modalLangBtn-ENG" onclick="setModalLanguageTab('ENG')" class="flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 transition flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-globe"></i>
+            <span>ENG (English)</span>
+          </button>
+          <button type="button" id="modalLangBtn-HINDI" onclick="setModalLanguageTab('HINDI')" class="flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 transition flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-om"></i>
+            <span class="font-hindi text-sm">HINDI (हिंदी)</span>
+          </button>
+        </div>
+
+        <!-- 2. CONTENT TYPE SELECTOR TABS -->
+        <div class="space-y-1">
+          <div class="flex items-center justify-between text-[11px]">
+            <label class="font-bold text-slate-300 flex items-center gap-1">
+              <i class="fa-solid fa-shapes text-amber-400"></i> Content Type:
+            </label>
+            <span id="postTypeBadge" class="text-[10px] font-bold text-amber-300 bg-amber-950/50 px-2 py-0.5 rounded border border-amber-800/40">Main Video</span>
+          </div>
+          <div class="grid grid-cols-4 gap-1.5" id="contentTypeButtonGroup">
+            <button type="button" onclick="setModalContentType('Main Video')" data-type="Main Video" class="type-sel-btn active py-2 px-2 rounded-xl border border-amber-500/50 bg-amber-500/20 text-amber-300 font-bold flex items-center justify-center gap-1 text-[11px] transition">
+              <i class="fa-solid fa-clapperboard"></i>
+              <span>Main Video</span>
+            </button>
+            <button type="button" onclick="setModalContentType('Short / Reel')" data-type="Short / Reel" class="type-sel-btn py-2 px-2 rounded-xl border border-slate-700 bg-slate-800 text-slate-300 font-medium hover:bg-slate-700 flex items-center justify-center gap-1 text-[11px] transition">
+              <i class="fa-solid fa-film"></i>
+              <span>Shorts/Reel</span>
+            </button>
+            <button type="button" onclick="setModalContentType('Static Post')" data-type="Static Post" class="type-sel-btn py-2 px-2 rounded-xl border border-slate-700 bg-slate-800 text-slate-300 font-medium hover:bg-slate-700 flex items-center justify-center gap-1 text-[11px] transition">
+              <i class="fa-solid fa-image"></i>
+              <span>Static Post</span>
+            </button>
+            <button type="button" onclick="setModalContentType('Story')" data-type="Story" class="type-sel-btn py-2 px-2 rounded-xl border border-slate-700 bg-slate-800 text-slate-300 font-medium hover:bg-slate-700 flex items-center justify-center gap-1 text-[11px] transition">
+              <i class="fa-solid fa-circle-notch"></i>
+              <span>Story</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 3. DATE AUTO-CALCULATOR & MANUAL TIME ROW -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-slate-950/60 p-2.5 rounded-xl border border-slate-800">
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="text-[11px] font-bold text-slate-300 flex items-center gap-1">
+                <i class="fa-solid fa-calendar text-blue-400"></i> Date:
+              </label>
+              <span id="autoScheduleBadge" class="text-[10px] font-semibold text-emerald-400 bg-emerald-950/50 px-1.5 py-0.2 rounded border border-emerald-800/40">
+                Wednesday • Day 5
+              </span>
+            </div>
+            <input type="date" id="postDateInput" onchange="handleModalDateChanged(this.value)" class="w-full bg-slate-900 text-slate-100 rounded-lg px-2.5 py-1.5 border border-slate-700 text-xs focus:border-amber-400 focus:outline-none">
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label id="currentTimeLangLabel" class="text-[11px] font-bold text-slate-300 flex items-center gap-1">
+                <i class="fa-solid fa-clock text-amber-400"></i> Arabic Post Time (KSA):
+              </label>
+              <span class="text-[9px] text-slate-500">24-hr format</span>
+            </div>
+            <div class="relative">
+              <input type="text" id="postTimeInput" placeholder="18:00" onchange="handleModalTimeChanged(this.value)" class="w-full bg-slate-900 text-slate-100 rounded-lg pl-2.5 pr-8 py-1.5 border border-slate-700 text-xs focus:border-amber-400 focus:outline-none">
+              <i class="fa-regular fa-clock absolute right-2.5 top-2 text-slate-500 text-xs"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. MANUAL PLATFORM SELECTION -->
+        <div class="space-y-1">
+          <label class="text-[11px] font-bold text-slate-300 flex items-center gap-1">
+            <i class="fa-solid fa-share-nodes text-sky-400"></i> Target Platforms:
+          </label>
+          <div class="grid grid-cols-5 gap-1.5" id="modalPlatformButtons">
+            <button type="button" onclick="toggleModalPlatform('YouTube')" data-platform="YouTube" class="plat-btn py-1.5 rounded-lg border border-slate-700 bg-slate-900/60 text-slate-400 text-xs flex items-center justify-center gap-1 transition">
+              <i class="fa-brands fa-youtube text-red-500"></i>
+              <span class="text-[11px]">YouTube</span>
+            </button>
+            <button type="button" onclick="toggleModalPlatform('TikTok')" data-platform="TikTok" class="plat-btn py-1.5 rounded-lg border border-slate-700 bg-slate-900/60 text-slate-400 text-xs flex items-center justify-center gap-1 transition">
+              <i class="fa-brands fa-tiktok text-slate-300"></i>
+              <span class="text-[11px]">TikTok</span>
+            </button>
+            <button type="button" onclick="toggleModalPlatform('Instagram')" data-platform="Instagram" class="plat-btn py-1.5 rounded-lg border border-slate-700 bg-slate-900/60 text-slate-400 text-xs flex items-center justify-center gap-1 transition">
+              <i class="fa-brands fa-instagram text-pink-400"></i>
+              <span class="text-[11px]">Instagram</span>
+            </button>
+            <button type="button" onclick="toggleModalPlatform('Facebook')" data-platform="Facebook" class="plat-btn py-1.5 rounded-lg border border-slate-700 bg-slate-900/60 text-slate-400 text-xs flex items-center justify-center gap-1 transition">
+              <i class="fa-brands fa-facebook text-blue-500"></i>
+              <span class="text-[11px]">Facebook</span>
+            </button>
+            <button type="button" onclick="toggleModalPlatform('X')" data-platform="X" class="plat-btn py-1.5 rounded-lg border border-slate-700 bg-slate-900/60 text-slate-400 text-xs flex items-center justify-center gap-1 transition">
+              <i class="fa-brands fa-x-twitter text-slate-300"></i>
+              <span class="text-[11px]">X</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 5. STATUS SELECTOR BUTTONS -->
+        <div class="space-y-1">
+          <label class="text-[11px] font-bold text-slate-300 flex items-center gap-1">
+            <i class="fa-solid fa-list-check text-emerald-400"></i> Post Status:
+          </label>
+          <div class="grid grid-cols-4 gap-1.5" id="modalStatusButtons">
+            <button type="button" onclick="setModalStatus('Done')" data-status="Done" class="status-btn py-1.5 px-2 rounded-lg border border-slate-700 bg-slate-900/60 text-slate-300 text-xs font-medium flex items-center justify-center gap-1 transition">
+              <i class="fa-solid fa-circle-check text-emerald-400 text-[11px]"></i> Done
+            </button>
+            <button type="button" onclick="setModalStatus('Scheduled')" data-status="Scheduled" class="status-btn active py-1.5 px-2 rounded-lg border border-blue-500/50 bg-blue-500/20 text-blue-300 text-xs font-bold flex items-center justify-center gap-1 transition">
+              <i class="fa-solid fa-calendar-check text-blue-400 text-[11px]"></i> Scheduled
+            </button>
+            <button type="button" onclick="setModalStatus('In Progress')" data-status="In Progress" class="status-btn py-1.5 px-2 rounded-lg border border-slate-700 bg-slate-900/60 text-slate-300 text-xs font-medium flex items-center justify-center gap-1 transition">
+              <i class="fa-solid fa-spinner text-purple-400 text-[11px]"></i> In Progress
+            </button>
+            <button type="button" onclick="setModalStatus('Draft')" data-status="Draft" class="status-btn py-1.5 px-2 rounded-lg border border-slate-700 bg-slate-900/60 text-slate-300 text-xs font-medium flex items-center justify-center gap-1 transition">
+              <i class="fa-solid fa-pen-ruler text-slate-400 text-[11px]"></i> Draft
+            </button>
+          </div>
+        </div>
+
+        
+        <!-- ARABIC PANEL (Visible when activeModalLang === 'AR') -->
+        <div id="langPanel-AR" class="space-y-2.5 pt-1">
+          <div class="flex items-center justify-between pb-1 border-b border-slate-800">
+            <span class="text-xs font-bold text-amber-300 flex items-center gap-1.5">
+              <i class="fa-solid fa-file-lines"></i> المحتوى باللغة العربية (الرئيسي)
+            </span>
+            <span class="text-[10px] text-slate-500">Columns M, Q & Tags</span>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="text-[11px] font-bold text-slate-300">عنوان المنشور (Title):</label>
+              <button type="button" onclick="copyFormField('arTitleInput')" class="text-[10px] text-amber-400 hover:text-amber-300 flex items-center gap-1">
+                <i class="fa-solid fa-copy"></i> Copy Title
+              </button>
+            </div>
+            <input type="text" id="arTitleInput" placeholder="عنوان الفيديو التاريخي بالعربية..." dir="rtl" class="w-full bg-slate-900 text-slate-100 font-arabic rounded-lg px-2.5 py-1.5 border border-slate-700 text-xs focus:border-amber-400 focus:outline-none">
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="text-[11px] font-bold text-slate-300">الوصف الكامل والمحتوى (Description / Caption):</label>
+              <button type="button" onclick="copyFormField('arDescInput')" class="text-[10px] text-amber-400 hover:text-amber-300 flex items-center gap-1">
+                <i class="fa-solid fa-copy"></i> Copy Description
+              </button>
+            </div>
+            <textarea id="arDescInput" rows="3" placeholder="اكتب نص المنشور الكامل هنا..." dir="rtl" class="w-full bg-slate-900 text-slate-100 font-arabic rounded-lg px-2.5 py-1.5 border border-slate-700 text-xs focus:border-amber-400 focus:outline-none"></textarea>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label class="text-[11px] font-bold text-slate-300">الهاشتاجات (Hashtags):</label>
+                <button type="button" onclick="copyFormField('arHashtagsInput')" class="text-[10px] text-amber-400 hover:text-amber-300 flex items-center gap-1">
+                  <i class="fa-solid fa-copy"></i> Copy
+                </button>
+              </div>
+              <input type="text" id="arHashtagsInput" placeholder="#تاريخ_إسلامي #حضارة" dir="rtl" class="w-full bg-slate-900 text-slate-100 rounded-lg px-2.5 py-1.5 border border-slate-700 text-xs focus:border-amber-400 focus:outline-none">
+            </div>
+
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label class="text-[11px] font-bold text-slate-300">الكلمات الدلالية (Keywords):</label>
+                <button type="button" onclick="copyFormField('arKeywordsInput')" class="text-[10px] text-amber-400 hover:text-amber-300 flex items-center gap-1">
+                  <i class="fa-solid fa-copy"></i> Copy
+                </button>
+              </div>
+              <input type="text" id="arKeywordsInput" placeholder="تاريخ, علماء, بغداد" dir="rtl" class="w-full bg-slate-900 text-slate-100 rounded-lg px-2.5 py-1.5 border border-slate-700 text-xs focus:border-amber-400 focus:outline-none">
+            </div>
+          </div>
+        </div>
+
+        <!-- ENGLISH PANEL (Visible when activeModalLang === 'ENG') -->
+        <div id="langPanel-ENG" class="space-y-2.5 pt-1 hidden">
+          <div class="flex items-center justify-between pb-1 border-b border-slate-800">
+            <span class="text-xs font-bold text-sky-400 flex items-center gap-1.5">
+              <i class="fa-solid fa-file-lines"></i> English Content Details
+            </span>
+            <span class="text-[10px] text-slate-500">Columns L, R & Tags</span>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="text-[11px] font-bold text-slate-300">Post Title / Working Title:</label>
+              <button type="button" onclick="copyFormField('engTitleInput')" class="text-[10px] text-sky-400 hover:text-sky-300 flex items-center gap-1">
+                <i class="fa-solid fa-copy"></i> Copy Title
+              </button>
+            </div>
+            <input type="text" id="engTitleInput" placeholder="English video title / working title..." class="w-full bg-slate-900 text-slate-100 rounded-lg px-2.5 py-1.5 border border-slate-700 text-xs focus:border-sky-400 focus:outline-none">
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="text-[11px] font-bold text-slate-300">Description / Caption:</label>
+              <button type="button" onclick="copyFormField('engDescInput')" class="text-[10px] text-sky-400 hover:text-sky-300 flex items-center gap-1">
+                <i class="fa-solid fa-copy"></i> Copy Description
+              </button>
+            </div>
+            <textarea id="engDescInput" rows="3" placeholder="Full English post caption and story summary..." class="w-full bg-slate-900 text-slate-100 rounded-lg px-2.5 py-1.5 border border-slate-700 text-xs focus:border-sky-400 focus:outline-none"></textarea>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label class="text-[11px] font-bold text-slate-300">Hashtags:</label>
+                <button type="button" onclick="copyFormField('engHashtagsInput')" class="text-[10px] text-sky-400 hover:text-sky-300 flex items-center gap-1">
+                  <i class="fa-solid fa-copy"></i> Copy
+                </button>
+              </div>
+              <input type="text" id="engHashtagsInput" placeholder="#IslamicHistory #Documentary" class="w-full bg-slate-900 text-slate-100 rounded-lg px-2.5 py-1.5 border border-slate-700 text-xs focus:border-sky-400 focus:outline-none">
+            </div>
+
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label class="text-[11px] font-bold text-slate-300">Keywords:</label>
+                <button type="button" onclick="copyFormField('engKeywordsInput')" class="text-[10px] text-sky-400 hover:text-sky-300 flex items-center gap-1">
+                  <i class="fa-solid fa-copy"></i> Copy
+                </button>
+              </div>
+              <input type="text" id="engKeywordsInput" placeholder="Islamic history, Baghdad, science" class="w-full bg-slate-900 text-slate-100 rounded-lg px-2.5 py-1.5 border border-slate-700 text-xs focus:border-sky-400 focus:outline-none">
+            </div>
+          </div>
+        </div>
+
+        <!-- HINDI PANEL (Visible when activeModalLang === 'HINDI') -->
+        <div id="langPanel-HINDI" class="space-y-2.5 pt-1 hidden">
+          <div class="flex items-center justify-between pb-1 border-b border-slate-800">
+            <span class="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
+              <i class="fa-solid fa-file-lines"></i> हिन्दी सामग्री विवरण (Hindi Content)
+            </span>
+            <span class="text-[10px] text-slate-500">Column S & Tags</span>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="text-[11px] font-bold text-slate-300">शीर्षक (Title):</label>
+              <button type="button" onclick="copyFormField('hindiTitleInput')" class="text-[10px] text-emerald-400 hover:text-emerald-300 flex items-center gap-1">
+                <i class="fa-solid fa-copy"></i> Copy Title
+              </button>
+            </div>
+            <input type="text" id="hindiTitleInput" placeholder="हिन्दी में वीडियो का शीर्षक..." class="w-full bg-slate-900 text-slate-100 font-hindi rounded-lg px-2.5 py-1.5 border border-slate-700 text-xs focus:border-emerald-400 focus:outline-none">
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="text-[11px] font-bold text-slate-300">विवरण और कैप्शन (Description / Caption):</label>
+              <button type="button" onclick="copyFormField('hindiDescInput')" class="text-[10px] text-emerald-400 hover:text-emerald-300 flex items-center gap-1">
+                <i class="fa-solid fa-copy"></i> Copy Description
+              </button>
+            </div>
+            <textarea id="hindiDescInput" rows="3" placeholder="यहाँ पूरा हिन्दी कैप्शन लिखें..." class="w-full bg-slate-900 text-slate-100 font-hindi rounded-lg px-2.5 py-1.5 border border-slate-700 text-xs focus:border-emerald-400 focus:outline-none"></textarea>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label class="text-[11px] font-bold text-slate-300">हैशटैग (Hashtags):</label>
+                <button type="button" onclick="copyFormField('hindiHashtagsInput')" class="text-[10px] text-emerald-400 hover:text-emerald-300 flex items-center gap-1">
+                  <i class="fa-solid fa-copy"></i> Copy
+                </button>
+              </div>
+              <input type="text" id="hindiHashtagsInput" placeholder="#इस्लामीइतिहास #इतिहास" class="w-full bg-slate-900 text-slate-100 rounded-lg px-2.5 py-1.5 border border-slate-700 text-xs focus:border-emerald-400 focus:outline-none">
+            </div>
+
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label class="text-[11px] font-bold text-slate-300">कीवर्ड (Keywords):</label>
+                <button type="button" onclick="copyFormField('hindiKeywordsInput')" class="text-[10px] text-emerald-400 hover:text-emerald-300 flex items-center gap-1">
+                  <i class="fa-solid fa-copy"></i> Copy
+                </button>
+              </div>
+              <input type="text" id="hindiKeywordsInput" placeholder="इस्लामी इतिहास, स्वर्ण युग" class="w-full bg-slate-900 text-slate-100 rounded-lg px-2.5 py-1.5 border border-slate-700 text-xs focus:border-emerald-400 focus:outline-none">
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal Action Footer -->
+        <div class="pt-3 border-t border-slate-800 flex items-center justify-between shrink-0">
+          <button type="button" id="deletePostBtn" onclick="deleteCurrentPost()" class="px-3 py-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 text-xs font-semibold flex items-center gap-1 transition">
+            <i class="fa-solid fa-trash"></i>
+            <span>Delete Post</span>
+          </button>
+
+          <div class="flex items-center gap-2 ml-auto">
+            <button type="button" onclick="closeEditModal()" class="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition">
+              Cancel
+            </button>
+            <button type="submit" class="px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white shadow-md text-xs font-bold transition flex items-center gap-1.5">
+              <i class="fa-solid fa-floppy-disk"></i>
+              <span>Save & Update</span>
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- DATE SHIFT MODAL DIALOG -->
+  <div id="shiftModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-sm shadow-2xl p-5 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+        <h3 class="text-sm font-bold text-slate-100 flex items-center gap-2">
+          <i class="fa-solid fa-calendar-week text-amber-400"></i> Shift Campaign Dates
+        </h3>
+        <button onclick="closeShiftModal()" class="text-slate-400 hover:text-slate-200">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      
+      <p class="text-xs text-slate-400">
+        Choose a new starting date for Day 1. All subsequent content will shift proportionally while preserving the posting schedule.
+      </p>
+
+      <div class="space-y-1">
+        <label class="text-xs font-semibold text-slate-300">New Campaign Start Date (Day 1):</label>
+        <input type="date" id="newCampaignStartDate" class="w-full bg-slate-800 text-slate-200 text-xs rounded-lg p-2 border border-slate-700 focus:border-amber-400 focus:outline-none">
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2 border-t border-slate-800">
+        <button onclick="closeShiftModal()" class="px-3 py-1.5 text-xs rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition">
+          Cancel
+        </button>
+        <button onclick="applyDateShift()" class="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-amber-600 hover:bg-amber-500 text-white transition flex items-center gap-1">
+          <i class="fa-solid fa-arrows-turn-right"></i> Shift All Dates
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- IN-APP TOAST NOTIFICATION CONTAINER -->
+  <div id="toastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+  <script>
+    // Master collection of posts
+    let postsData = [];
+    let activeFilterLang = 'ALL';
+    let activeFilterStatus = 'ALL';
+    let activeFilterType = 'ALL';
+    let currentViewingDate = new Date(2024, 10, 1); // November 2024 (Month 10 is 0-indexed)
+    let selectedPostId = null;
+    let ganttScale = 'month'; // 'month' or 'week'
+
+    // Interactive slider active day (1 to 30)
+    let sliderActiveDay = 6; // Default to Nov 6 (Wed Main Video)
+
+    // Modal state
+    let activeModalLang = 'AR';
+    let modalSelectedPlatforms = ['YouTube', 'TikTok', 'Instagram'];
+    let modalSelectedType = 'Main Video';
+    let modalSelectedStatus = 'Scheduled';
+
+    // Day of week strings starting Saturday
+    const weekdayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+    // Safe DOM helpers to eliminate null pointer exceptions
+    function safeSetVal(id, val) {
+      const el = document.getElementById(id);
+      if (el) el.value = val !== undefined && val !== null ? val : '';
+    }
+
+    function safeGetVal(id) {
+      const el = document.getElementById(id);
+      return el ? el.value.trim() : '';
+    }
+
+    function copyFormField(id) {
+      const el = document.getElementById(id);
+      if (!el || !el.value) {
+        showToast('Field is empty to copy', 'warning');
+        return;
+      }
+      copyToClipboard(el.value, 'Copied to clipboard!');
+    }
+
+    function copyToClipboard(text, msg = 'Copied to clipboard!') {
+      if (!text) return;
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand('copy');
+        showToast(msg, 'success');
+      } catch (err) {
+        showToast('Could not copy text', 'error');
+      }
+      document.body.removeChild(textarea);
+    }
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      if (!container) return;
+
+      const toast = document.createElement('div');
+      toast.className = `px-3.5 py-2.5 rounded-xl shadow-xl border text-xs font-semibold flex items-center gap-2 transform transition-all duration-300 translate-y-2 opacity-0 pointer-events-auto ${
+        type === 'success' ? 'bg-emerald-950/90 border-emerald-500/50 text-emerald-200' :
+        type === 'error' ? 'bg-rose-950/90 border-rose-500/50 text-rose-200' :
+        type === 'warning' ? 'bg-amber-950/90 border-amber-500/50 text-amber-200' :
+        'bg-slate-900/90 border-slate-700 text-slate-200'
+      }`;
+
+      const icon = type === 'success' ? 'fa-circle-check text-emerald-400' :
+                   type === 'error' ? 'fa-circle-xmark text-rose-400' :
+                   type === 'warning' ? 'fa-triangle-exclamation text-amber-400' :
+                   'fa-circle-info text-blue-400';
+
+      toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${message}</span>`;
+      container.appendChild(toast);
+
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      });
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    function toggleDropdown(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('hidden');
+    }
+
+    window.addEventListener('click', (e) => {
+      const exportWrap = document.getElementById('exportMenuWrapper');
+      const exportDrop = document.getElementById('exportDropdown');
+      if (exportWrap && exportDrop && !exportWrap.contains(e.target)) {
+        exportDrop.classList.add('hidden');
+      }
+    });
+
+    function setModalLanguageTab(lang) {
+      activeModalLang = lang;
+
+      ['AR', 'ENG', 'HINDI'].forEach(l => {
+        const btn = document.getElementById(`modalLangBtn-${l}`);
+        const panel = document.getElementById(`langPanel-${l}`);
+        if (!btn || !panel) return;
+
+        if (l === lang) {
+          btn.className = 'flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 bg-emerald-600 text-white shadow-sm';
+          panel.classList.remove('hidden');
+        } else {
+          btn.className = 'flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 transition flex items-center justify-center gap-1.5';
+          panel.classList.add('hidden');
+        }
+      });
+
+      const timeInput = document.getElementById('postTimeInput');
+      const timeLabel = document.getElementById('currentTimeLangLabel');
+
+      if (lang === 'AR') {
+        if (timeLabel) timeLabel.innerHTML = '<i class="fa-solid fa-clock text-amber-400"></i> Arabic Post Time (KSA):';
+        if (timeInput) timeInput.value = safeGetVal('postArabicTime') || '18:00';
+      } else if (lang === 'ENG') {
+        if (timeLabel) timeLabel.innerHTML = '<i class="fa-solid fa-clock text-sky-400"></i> English Post Time (KSA):';
+        if (timeInput) timeInput.value = safeGetVal('postEnglishTime') || '18:30';
+      } else if (lang === 'HINDI') {
+        if (timeLabel) timeLabel.innerHTML = '<i class="fa-solid fa-clock text-emerald-400"></i> Hindi Post Time (KSA):';
+        if (timeInput) timeInput.value = safeGetVal('postHindiTime') || '19:00';
+      }
+    }
+
+    function setModalContentType(type) {
+      modalSelectedType = type;
+      safeSetVal('postType', type);
+      safeSetVal('postIsMainVideo', type === 'Main Video' ? 'true' : 'false');
+
+      const badge = document.getElementById('postTypeBadge');
+      if (badge) badge.textContent = type;
+
+      document.querySelectorAll('#contentTypeButtonGroup .type-sel-btn').forEach(btn => {
+        if (btn.getAttribute('data-type') === type) {
+          btn.className = 'type-sel-btn active py-2 px-2 rounded-xl border border-amber-500/50 bg-amber-500/20 text-amber-300 font-bold flex items-center justify-center gap-1 text-[11px] transition';
+        } else {
+          btn.className = 'type-sel-btn py-2 px-2 rounded-xl border border-slate-700 bg-slate-800 text-slate-300 font-medium hover:bg-slate-700 flex items-center justify-center gap-1 text-[11px] transition';
+        }
+      });
+
+      if (type === 'Main Video') safeSetVal('postFormat', '16:9 Landscape Video');
+      else if (type === 'Short / Reel') safeSetVal('postFormat', '9:16 Vertical Reel (45s)');
+      else if (type === 'Static Post') safeSetVal('postFormat', '1:1 Square Carousel');
+      else if (type === 'Story') safeSetVal('postFormat', '9:16 Vertical Story (15s)');
+    }
+
+    function setModalStatus(status) {
+      modalSelectedStatus = status;
+      safeSetVal('postStatus', status);
+
+      document.querySelectorAll('#modalStatusButtons .status-btn').forEach(btn => {
+        if (btn.getAttribute('data-status') === status) {
+          btn.className = 'status-btn active py-1.5 px-2 rounded-lg border border-blue-500/50 bg-blue-500/20 text-blue-300 text-xs font-bold flex items-center justify-center gap-1 transition';
+        } else {
+          btn.className = 'status-btn py-1.5 px-2 rounded-lg border border-slate-700 bg-slate-900/60 text-slate-300 hover:border-slate-500 text-xs font-medium flex items-center justify-center gap-1 transition';
+        }
+      });
+    }
+
+    function toggleModalPlatform(platform) {
+      if (modalSelectedPlatforms.includes(platform)) {
+        if (modalSelectedPlatforms.length > 1) {
+          modalSelectedPlatforms = modalSelectedPlatforms.filter(p => p !== platform);
+        } else {
+          showToast('Select at least one platform', 'warning');
+          return;
+        }
+      } else {
+        modalSelectedPlatforms.push(platform);
+      }
+      renderModalPlatformButtons();
+    }
+
+    function renderModalPlatformButtons() {
+      document.querySelectorAll('#modalPlatformButtons .plat-btn').forEach(btn => {
+        const plat = btn.getAttribute('data-platform');
+        if (modalSelectedPlatforms.includes(plat)) {
+          btn.classList.add('border-amber-500/50', 'bg-amber-500/20', 'text-amber-200');
+          btn.classList.remove('border-slate-700', 'bg-slate-900/60', 'text-slate-400');
+        } else {
+          btn.classList.remove('border-amber-500/50', 'bg-amber-500/20', 'text-amber-200');
+          btn.classList.add('border-slate-700', 'bg-slate-900/60', 'text-slate-400');
+        }
+      });
+    }
+
+    function handleModalDateChanged(dateStr) {
+      if (!dateStr) return;
+      const parts = dateStr.split('-');
+      if (parts.length !== 3) return;
+
+      const d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+      if (isNaN(d.getTime())) return;
+
+      const weekdayName = weekdayNames[d.getDay()];
+      safeSetVal('postWeekday', weekdayName);
+
+      let dayNum = 1;
+      let weekNum = 1;
+      if (postsData.length > 0) {
+        const sorted = [...postsData].sort((a,b) => new Date(a.date) - new Date(b.date));
+        const firstDate = new Date(sorted[0].date);
+        const diffDays = Math.round((d - firstDate) / (1000 * 60 * 60 * 24));
+        dayNum = Math.max(1, diffDays + 1);
+        weekNum = Math.max(1, Math.ceil(dayNum / 7));
+      }
+
+      safeSetVal('postDayNumber', dayNum);
+      safeSetVal('postWeekFigure', `Week ${weekNum}`);
+
+      if (weekdayName === 'Wednesday' && modalSelectedType !== 'Main Video') {
+        setModalContentType('Main Video');
+      }
+
+      const badge = document.getElementById('autoScheduleBadge');
+      if (badge) {
+        badge.textContent = `${weekdayName} • Day ${dayNum} • Week ${weekNum}`;
+      }
+    }
+
+    function handleModalTimeChanged(timeVal) {
+      if (activeModalLang === 'AR') {
+        safeSetVal('postArabicTime', timeVal);
+      } else if (activeModalLang === 'ENG') {
+        safeSetVal('postEnglishTime', timeVal);
+      } else if (activeModalLang === 'HINDI') {
+        safeSetVal('postHindiTime', timeVal);
+      }
+    }
+
+    function openEditModal(postId) {
+      selectedPostId = postId;
+      const modal = document.getElementById('editModal');
+      const modalTitle = document.getElementById('modalTitle');
+      const deleteBtn = document.getElementById('deletePostBtn');
+
+      if (!modal) return;
+
+      if (postId) {
+        const post = postsData.find(p => p.id === postId);
+        if (!post) return;
+
+        if (modalTitle) modalTitle.textContent = `Edit: ${post.titleArabic || post.titleEnglish || 'Content'}`;
+        if (deleteBtn) deleteBtn.classList.remove('hidden');
+
+        safeSetVal('postId', post.id);
+        safeSetVal('postDayNumber', post.dayNumber || '1');
+        safeSetVal('postDateInput', post.date);
+        safeSetVal('postWeekday', post.weekday || '');
+        safeSetVal('postWeekFigure', post.weekFigure || 'Week 1');
+        safeSetVal('postFormat', post.format || '16:9 Landscape Video');
+
+        safeSetVal('postArabicTime', post.arabicPostTime || '18:00');
+        safeSetVal('postEnglishTime', post.englishPostTime || '18:30');
+        safeSetVal('postHindiTime', post.hindiPostTime || '19:00');
+        safeSetVal('postStoryTime', post.storyTimes || '14:00, 20:30');
+
+        safeSetVal('arTitleInput', post.titleArabic || '');
+        safeSetVal('arDescInput', post.arabicPostContent || '');
+        safeSetVal('arHashtagsInput', post.arabicHashtags || '#تاريخ_إسلامي #حضارة');
+        safeSetVal('arKeywordsInput', post.arabicKeywords || 'تاريخ, بغداد, علماء');
+
+        safeSetVal('engTitleInput', post.titleEnglish || '');
+        safeSetVal('engDescInput', post.englishPostContent || '');
+        safeSetVal('engHashtagsInput', post.englishHashtags || '#IslamicHistory #Documentary');
+        safeSetVal('engKeywordsInput', post.englishKeywords || 'Islamic history, Baghdad, science');
+
+        safeSetVal('hindiTitleInput', post.titleHindi || '');
+        safeSetVal('hindiDescInput', post.hindiPostContent || '');
+        safeSetVal('hindiHashtagsInput', post.hindiHashtags || '#इस्लामीइतिहास #इतिहास');
+        safeSetVal('hindiKeywordsInput', post.hindiKeywords || 'इस्लामी इतिहास, स्वर्ण युग');
+
+        safeSetVal('postHookArabic', post.hookArabic || '');
+        safeSetVal('postHookEnglish', post.hookEnglish || '');
+        safeSetVal('postStory1Plan', post.story1Plan || '');
+        safeSetVal('postStory1Arabic', post.story1Arabic || '');
+        safeSetVal('postStory2Plan', post.story2Plan || '');
+        safeSetVal('postStory2Arabic', post.story2Arabic || '');
+        safeSetVal('postChecklist', post.filmingChecklist || '');
+        safeSetVal('postCTA', post.cta || '');
+        safeSetVal('postActionTask', post.actionTask || '');
+        safeSetVal('postKPI', post.kpiToLog || '');
+
+        setModalContentType(post.type || (post.isMainVideo ? 'Main Video' : 'Short / Reel'));
+        setModalStatus(post.status || 'Scheduled');
+
+        modalSelectedPlatforms = Array.isArray(post.platforms) && post.platforms.length > 0 
+          ? [...post.platforms] 
+          : ['YouTube', 'TikTok', 'Instagram'];
+        renderModalPlatformButtons();
+
+        handleModalDateChanged(post.date);
+
+      } else {
+        if (modalTitle) modalTitle.textContent = 'Add New Content';
+        if (deleteBtn) deleteBtn.classList.add('hidden');
+
+        const todayStr = new Date().toISOString().split('T')[0];
+        safeSetVal('postId', '');
+        safeSetVal('postDayNumber', (postsData.length + 1).toString());
+        safeSetVal('postDateInput', todayStr);
+        safeSetVal('postFormat', '16:9 Landscape Video');
+
+        safeSetVal('postArabicTime', '18:00');
+        safeSetVal('postEnglishTime', '18:30');
+        safeSetVal('postHindiTime', '19:00');
+        safeSetVal('postStoryTime', '14:00, 20:30');
+
+        safeSetVal('arTitleInput', '');
+        safeSetVal('arDescInput', '');
+        safeSetVal('arHashtagsInput', '#تاريخ_إسلامي #حضارة');
+        safeSetVal('arKeywordsInput', 'تاريخ, علماء, بغداد');
+
+        safeSetVal('engTitleInput', '');
+        safeSetVal('engDescInput', '');
+        safeSetVal('engHashtagsInput', '#IslamicHistory #Documentary');
+        safeSetVal('engKeywordsInput', 'Islamic history, Baghdad, science');
+
+        safeSetVal('hindiTitleInput', '');
+        safeSetVal('hindiDescInput', '');
+        safeSetVal('hindiHashtagsInput', '#इस्लामीइतिहास #इतिहास');
+        safeSetVal('hindiKeywordsInput', 'इस्लामी इतिहास, स्वर्ण युग');
+
+        safeSetVal('postHookArabic', '');
+        safeSetVal('postHookEnglish', '');
+        safeSetVal('postStory1Plan', '');
+        safeSetVal('postStory1Arabic', '');
+        safeSetVal('postStory2Plan', '');
+        safeSetVal('postStory2Arabic', '');
+        safeSetVal('postChecklist', 'Script approved; Voiceover recorded');
+        safeSetVal('postCTA', 'Share and subscribe for more Islamic history');
+        safeSetVal('postActionTask', 'Review historical citations');
+        safeSetVal('postKPI', 'Retention > 45%, 15K views');
+
+        setModalContentType('Main Video');
+        setModalStatus('Scheduled');
+        modalSelectedPlatforms = ['YouTube', 'TikTok', 'Instagram'];
+        renderModalPlatformButtons();
+
+        handleModalDateChanged(todayStr);
+      }
+
+      setModalLanguageTab('AR');
+      modal.classList.remove('hidden');
+    }
+
+    function closeEditModal() {
+      const modal = document.getElementById('editModal');
+      if (modal) modal.classList.add('hidden');
+      selectedPostId = null;
+    }
+
+    function savePost(event) {
+      if (event) event.preventDefault();
+
+      const dateVal = safeGetVal('postDateInput');
+      if (!dateVal) {
+        showToast('Please select a valid date', 'error');
+        return;
+      }
+
+      const idVal = safeGetVal('postId') || `post-${Date.now()}`;
+      const weekdayVal = safeGetVal('postWeekday') || weekdayNames[new Date(dateVal).getDay()];
+      const isMainVideoVal = modalSelectedType === 'Main Video' || weekdayVal === 'Wednesday';
+
+      const titleAr = safeGetVal('arTitleInput') || 'محتوى تاريخي جديد';
+      const titleEn = safeGetVal('engTitleInput') || titleAr;
+      const titleHi = safeGetVal('hindiTitleInput') || titleEn;
+
+      const descAr = safeGetVal('arDescInput') || '';
+      const descEn = safeGetVal('engDescInput') || '';
+      const descHi = safeGetVal('hindiDescInput') || '';
+
+      const hashtagsAr = safeGetVal('arHashtagsInput') || '#تاريخ_إسلامي';
+      const hashtagsEn = safeGetVal('engHashtagsInput') || '#IslamicHistory';
+      const hashtagsHi = safeGetVal('hindiHashtagsInput') || '#इस्लामीइतिहास';
+
+      const keywordsAr = safeGetVal('arKeywordsInput') || '';
+      const keywordsEn = safeGetVal('engKeywordsInput') || '';
+      const keywordsHi = safeGetVal('hindiKeywordsInput') || '';
+
+      const captionAr = descAr ? `${descAr}\n\n${hashtagsAr}` : hashtagsAr;
+      const captionEn = descEn ? `${descEn}\n\n${hashtagsEn}` : hashtagsEn;
+      const captionHi = descHi ? `${descHi}\n\n${hashtagsHi}` : hashtagsHi;
+
+      const postObj = {
+        id: idVal,
+        dayNumber: safeGetVal('postDayNumber') || '1',
+        date: dateVal,
+        weekday: weekdayVal,
+        weekFigure: safeGetVal('postWeekFigure') || 'Week 1',
+        type: modalSelectedType,
+        isMainVideo: isMainVideoVal,
+        arabicPostTime: safeGetVal('postArabicTime') || '18:00',
+        englishPostTime: safeGetVal('postEnglishTime') || '18:30',
+        hindiPostTime: safeGetVal('postHindiTime') || '19:00',
+        storyTimes: safeGetVal('postStoryTime') || '14:00, 20:30',
+        platforms: modalSelectedPlatforms.length > 0 ? [...modalSelectedPlatforms] : ['YouTube'],
+        format: safeGetVal('postFormat') || (modalSelectedType === 'Main Video' ? '16:9 Landscape Video' : '9:16 Vertical Reel (45s)'),
+        titleArabic: titleAr,
+        titleEnglish: titleEn,
+        titleHindi: titleHi,
+        arabicPostContent: captionAr,
+        englishPostContent: captionEn,
+        hindiPostContent: captionHi,
+        arabicHashtags: hashtagsAr,
+        englishHashtags: hashtagsEn,
+        hindiHashtags: hashtagsHi,
+        arabicKeywords: keywordsAr,
+        englishKeywords: keywordsEn,
+        hindiKeywords: keywordsHi,
+        hookArabic: safeGetVal('postHookArabic') || titleAr,
+        hookEnglish: safeGetVal('postHookEnglish') || titleEn,
+        filmingChecklist: safeGetVal('postChecklist') || 'Script finalized; Voiceover recorded',
+        story1Plan: safeGetVal('postStory1Plan') || `${modalSelectedType} teaser highlight`,
+        story1Arabic: safeGetVal('postStory1Arabic') || 'شاهد الفيديو الكامل على يوتيوب',
+        story2Plan: safeGetVal('postStory2Plan') || 'Graphic quote and engagement quiz',
+        story2Arabic: safeGetVal('postStory2Arabic') || 'شاركنا رأيك في التعليقات',
+        cta: safeGetVal('postCTA') || 'اشترك وشارك المقطع لدعم نشر التاريخ الإسلامي',
+        actionTask: safeGetVal('postActionTask') || 'Review historical citations and map references',
+        kpiToLog: safeGetVal('postKPI') || 'Retention > 40%, 10K+ views',
+        status: modalSelectedStatus
+      };
+
+      const existingIndex = postsData.findIndex(p => p.id === idVal);
+      if (existingIndex >= 0) {
+        postsData[existingIndex] = postObj;
+        showToast('Post updated successfully!', 'success');
+      } else {
+        postsData.push(postObj);
+        showToast('New post added to calendar!', 'success');
+      }
+
+      postsData.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+      closeEditModal();
+      renderAllViews();
+    }
+
+    function deleteCurrentPost() {
+      if (!selectedPostId) return;
+      postsData = postsData.filter(p => p.id !== selectedPostId);
+      closeEditModal();
+      showToast('Post deleted from calendar', 'info');
+      renderAllViews();
+    }
+
+    function renderCalendar() {
+      const container = document.getElementById('calendarGrid');
+      const titleEl = document.getElementById('calendarMonthTitle');
+      if (!container) return;
+
+      const year = currentViewingDate.getFullYear();
+      const month = currentViewingDate.getMonth();
+      const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+      if (titleEl) titleEl.textContent = `${monthNames[month]} ${year}`;
+
+      const firstDayOfMonth = new Date(year, month, 1);
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+      // In JS: 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat
+      // Our calendar starts Saturday, so Sat=0, Sun=1, Mon=2, Tue=3, Wed=4, Thu=5, Fri=6
+      const firstDayOfWeek = (firstDayOfMonth.getDay() + 1) % 7;
+
+      container.innerHTML = '';
+
+      // Leading padding cells from previous month
+      const prevMonthDays = new Date(year, month, 0).getDate();
+      for (let i = 0; i < firstDayOfWeek; i++) {
+        const dayNum = prevMonthDays - firstDayOfWeek + i + 1;
+        const cell = document.createElement('div');
+        const colIndex = i; // 0=Sat ... 4=Wed, 6=Fri
+        const isFri = colIndex === 6;
+        cell.className = `calendar-cell p-1.5 opacity-30 border border-slate-800/40 select-none ${isFri ? 'friday-cell' : 'bg-slate-950/40'}`;
+        cell.innerHTML = `<span class="text-[10px] font-bold ${isFri ? 'text-rose-400' : 'text-slate-600'}">${dayNum}</span>`;
+        container.appendChild(cell);
+      }
+
+      // Active days of current month
+      const todayDateObj = new Date(year, month, sliderActiveDay);
+      const todayDateStr = formatDateStr(todayDateObj);
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const currentDate = new Date(year, month, day);
+        const dateStr = formatDateStr(currentDate);
+        const dayOfWeekIndex = (currentDate.getDay() + 1) % 7; // 4 = Wednesday, 6 = Friday
+
+        const isWednesday = dayOfWeekIndex === 4;
+        const isFriday = dayOfWeekIndex === 6;
+        const isToday = dateStr === todayDateStr;
+
+        const dayPosts = postsData.filter(p => {
+          if (p.date !== dateStr) return false;
+          if (activeFilterStatus !== 'ALL' && p.status !== activeFilterStatus) return false;
+          if (activeFilterType !== 'ALL' && p.type !== activeFilterType) return false;
+          return true;
+        });
+
+        const cell = document.createElement('div');
+        let cellClasses = 'calendar-cell p-1.5 border border-slate-800 flex flex-col justify-between relative group hover:border-slate-600 transition ';
+        
+        if (isFriday) cellClasses += 'friday-cell ';
+        else if (isWednesday) cellClasses += 'wednesday-cell ';
+        else cellClasses += 'bg-slate-900/60 ';
+
+        if (isToday) cellClasses += ' ring-2 ring-rose-500/80 shadow-lg shadow-rose-950/40 ';
+
+        cell.className = cellClasses;
+
+        // Date Header inside cell
+        let headerHtml = `
+          <div class="flex items-center justify-between mb-1 select-none">
+            <span class="text-[11px] font-extrabold ${isToday ? 'bg-rose-600 text-white px-1.5 py-0.2 rounded-full' : isWednesday ? 'text-amber-400' : isFriday ? 'text-rose-300 font-bold' : 'text-slate-300'}">
+              ${day} ${isToday ? '<span class="text-[8px] font-normal">TODAY</span>' : ''}
+            </span>
+            ${isWednesday ? '<span class="text-[8px] font-extrabold text-amber-400 bg-amber-950/80 px-1 py-0.2 rounded border border-amber-500/40"><i class="fa-solid fa-crown text-[7px]"></i> MAIN</span>' : ''}
+          </div>
+        `;
+
+        // Posts List inside cell
+        let postsHtml = '<div class="space-y-1.5 overflow-hidden flex-1 flex flex-col justify-start">';
+        dayPosts.forEach(post => {
+          const isMain = post.type === 'Main Video' || isWednesday;
+          const statusBg = post.status === 'Done' ? 'border-emerald-500/60 bg-emerald-950/70 text-emerald-200 hover:border-emerald-400' :
+                           post.status === 'In Progress' ? 'border-purple-500/60 bg-purple-950/70 text-purple-200 hover:border-purple-400' :
+                           'border-blue-500/60 bg-blue-950/70 text-blue-200 hover:border-blue-400';
+
+          const titleDisplay = activeFilterLang === 'EN' ? (post.titleEnglish || post.titleArabic) :
+                               activeFilterLang === 'HI' ? (post.titleHindi || post.titleEnglish) :
+                               (post.titleArabic || post.titleEnglish);
+
+          const timeDisplay = activeFilterLang === 'EN' ? post.englishPostTime :
+                              activeFilterLang === 'HI' ? post.hindiPostTime :
+                              post.arabicPostTime;
+
+          const typeIcon = post.type === 'Main Video' ? 'fa-clapperboard text-amber-400' :
+                           post.type === 'Short / Reel' ? 'fa-film text-emerald-400' :
+                           post.type === 'Story' ? 'fa-circle-notch text-pink-400' : 'fa-image text-blue-400';
+
+          postsHtml += `
+            <div onclick="openEditModal('${post.id}')" class="post-card p-2 sm:p-2.5 rounded-xl border ${statusBg} text-[11px] cursor-pointer hover:scale-[1.01] transition-all shadow-md flex flex-col justify-between gap-1.5 select-none">
+              <div class="flex items-start justify-between gap-1.5 leading-snug">
+                <span class="font-bold text-slate-100 flex items-center gap-1.5 line-clamp-2">
+                  <i class="fa-solid ${typeIcon} text-[10px] shrink-0"></i>
+                  <span class="line-clamp-2">${titleDisplay}</span>
+                </span>
+                <span class="text-[9px] font-mono shrink-0 px-1.5 py-0.5 rounded bg-slate-900/80 border border-slate-700/60 text-amber-300 font-semibold">${timeDisplay || '18:00'}</span>
+              </div>
+              <div class="flex items-center justify-between text-[9px] text-slate-300 pt-1 border-t border-white/5 gap-1.5">
+                <div class="flex items-center gap-1.5 shrink-0">
+                  ${renderPlatformIcons(post.platforms)}
+                </div>
+                <div class="flex items-center gap-1 shrink-0 ml-auto">
+                  <div class="flex items-center gap-0.5">
+                    ${getLanguageBadges(post)}
+                  </div>
+                  <span class="text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-900/60 border border-white/10">${post.status}</span>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+        postsHtml += '</div>';
+
+        cell.innerHTML = headerHtml + postsHtml;
+        container.appendChild(cell);
+      }
+
+      // Trailing padding cells
+      const totalCells = firstDayOfWeek + daysInMonth;
+      const trailingCount = (7 - (totalCells % 7)) % 7;
+      for (let i = 1; i <= trailingCount; i++) {
+        const cell = document.createElement('div');
+        const colIndex = (totalCells + i - 1) % 7;
+        const isFri = colIndex === 6;
+        cell.className = `calendar-cell p-1.5 opacity-30 border border-slate-800/40 select-none ${isFri ? 'friday-cell' : 'bg-slate-950/40'}`;
+        cell.innerHTML = `<span class="text-[10px] font-bold ${isFri ? 'text-rose-400' : 'text-slate-600'}">${i}</span>`;
+        container.appendChild(cell);
+      }
+    }
+
+    function getLanguageBadges(post) {
+      if (!post) return '';
+      const badges = [];
+
+      const hasAr = Boolean((post.titleArabic && post.titleArabic.trim()) || (post.arabicPostContent && post.arabicPostContent.trim()));
+      const hasEn = Boolean((post.titleEnglish && post.titleEnglish.trim()) || (post.englishPostContent && post.englishPostContent.trim()));
+      const hasHi = Boolean((post.titleHindi && post.titleHindi.trim()) || (post.hindiPostContent && post.hindiPostContent.trim()));
+
+      if (hasAr) {
+        badges.push('<span class="text-[7px] font-bold px-0.5 py-0 rounded bg-amber-500/25 text-amber-300 border border-amber-500/30 leading-none">AR</span>');
+      }
+      if (hasEn) {
+        badges.push('<span class="text-[7px] font-bold px-0.5 py-0 rounded bg-sky-500/25 text-sky-300 border border-sky-500/30 leading-none">EN</span>');
+      }
+      if (hasHi) {
+        badges.push('<span class="text-[7px] font-bold px-0.5 py-0 rounded bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 leading-none">HD</span>');
+      }
+
+      if (badges.length === 0) {
+        badges.push('<span class="text-[7px] font-bold px-0.5 py-0 rounded bg-slate-800 text-slate-400 border border-slate-700 leading-none">AR</span>');
+      }
+
+      return badges.join('');
+    }
+
+    function renderPlatformIcons(platforms) {
+      if (!Array.isArray(platforms) || platforms.length === 0) return '';
+      let html = '';
+      if (platforms.includes('YouTube')) html += '<i class="fa-brands fa-youtube text-red-500 text-[8px]"></i>';
+      if (platforms.includes('TikTok')) html += '<i class="fa-brands fa-tiktok text-slate-300 text-[8px]"></i>';
+      if (platforms.includes('Instagram')) html += '<i class="fa-brands fa-instagram text-pink-400 text-[8px]"></i>';
+      if (platforms.includes('Facebook')) html += '<i class="fa-brands fa-facebook text-blue-500 text-[8px]"></i>';
+      if (platforms.includes('X')) html += '<i class="fa-brands fa-x-twitter text-slate-300 text-[8px]"></i>';
+      return html;
+    }
+
+    function renderGantt() {
+      const container = document.getElementById('ganttContent');
+      if (!container) return;
+
+      const year = currentViewingDate.getFullYear();
+      const month = currentViewingDate.getMonth();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+      let displayDays = [];
+      if (ganttScale === 'week') {
+        const centerDay = sliderActiveDay;
+        const start = Math.max(1, centerDay - 3);
+        const end = Math.min(daysInMonth, start + 6);
+        for (let d = start; d <= end; d++) displayDays.push(d);
+      } else {
+        for (let d = 1; d <= daysInMonth; d++) displayDays.push(d);
+      }
+
+      const totalCols = displayDays.length;
+
+      // Filtered posts for Gantt
+      const filtered = postsData.filter(p => {
+        if (activeFilterStatus !== 'ALL' && p.status !== activeFilterStatus) return false;
+        if (activeFilterType !== 'ALL' && p.type !== activeFilterType) return false;
+        return true;
+      });
+
+      let html = `
+        <div class="grid" style="grid-template-columns: 180px repeat(${totalCols}, minmax(28px, 1fr));">
+          <!-- Header corner -->
+          <div class="p-1.5 text-[11px] font-bold text-slate-400 border-b border-slate-700 bg-slate-900 sticky left-0 z-20">
+            Campaign Content
+          </div>
+      `;
+
+      displayDays.forEach(d => {
+        const dateObj = new Date(year, month, d);
+        const isWed = (dateObj.getDay() + 1) % 7 === 4;
+        const isFri = (dateObj.getDay() + 1) % 7 === 6;
+        const isToday = d === sliderActiveDay;
+
+        html += `
+          <div class="text-center p-1 border-b border-r border-slate-800 text-[10px] font-semibold ${isToday ? 'bg-rose-950/60 text-rose-300 font-bold' : isWed ? 'bg-amber-950/40 text-amber-300' : isFri ? 'bg-rose-950/30 text-rose-300' : 'text-slate-400'}">
+            ${d}
+          </div>
+        `;
+      });
+      html += `</div>`;
+
+      // Render Rows
+      if (filtered.length === 0) {
+        html += `<div class="p-8 text-center text-xs text-slate-500">No posts match the current filter criteria</div>`;
+      } else {
+        filtered.forEach(post => {
+          const postDate = new Date(post.date);
+          const postDay = postDate.getDate();
+          const inCurrentMonth = postDate.getMonth() === month && postDate.getFullYear() === year;
+
+          const titleDisplay = activeFilterLang === 'EN' ? (post.titleEnglish || post.titleArabic) :
+                               activeFilterLang === 'HI' ? (post.titleHindi || post.titleEnglish) :
+                               (post.titleArabic || post.titleEnglish);
+
+          const barColor = post.type === 'Main Video' ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-slate-950 font-bold border-amber-400' :
+                           post.type === 'Story' ? 'bg-gradient-to-r from-pink-600 to-rose-500 text-white border-pink-400' :
+                           'bg-gradient-to-r from-emerald-600 to-teal-500 text-white border-emerald-400';
+
+          html += `
+            <div class="grid items-center hover:bg-slate-800/40 transition border-b border-slate-800/60" style="grid-template-columns: 180px repeat(${totalCols}, minmax(28px, 1fr));">
+              <!-- Label column -->
+              <div onclick="openEditModal('${post.id}')" class="p-1.5 truncate text-[11px] font-semibold text-slate-200 cursor-pointer hover:text-amber-300 flex items-center gap-1.5 sticky left-0 bg-slate-900/90 z-10 border-r border-slate-800">
+                <span class="w-1.5 h-1.5 rounded-full ${post.status === 'Done' ? 'bg-emerald-400' : 'bg-blue-400'} shrink-0"></span>
+                <span class="truncate">${titleDisplay}</span>
+              </div>
+          `;
+
+          displayDays.forEach(d => {
+            const isMatch = inCurrentMonth && postDay === d;
+            const isWed = (new Date(year, month, d).getDay() + 1) % 7 === 4;
+            const isFri = (new Date(year, month, d).getDay() + 1) % 7 === 6;
+            const isToday = d === sliderActiveDay;
+
+            let cellBg = isToday ? 'bg-rose-950/20 ' : isWed ? 'bg-amber-950/20 ' : isFri ? 'bg-rose-950/15 ' : '';
+
+            if (isMatch) {
+              html += `
+                <div class="p-1 border-r border-slate-800/60 relative ${cellBg}">
+                  <div onclick="openEditModal('${post.id}')" class="h-6 rounded-md shadow-md flex items-center justify-center text-[9px] cursor-pointer px-1 border ${barColor} truncate" title="${titleDisplay} (${post.arabicPostTime})">
+                    <span class="truncate font-semibold">${post.type === 'Main Video' ? '★ Main' : 'Post'}</span>
+                  </div>
+                </div>
+              `;
+            } else {
+              html += `<div class="h-8 border-r border-slate-800/40 ${cellBg}"></div>`;
+            }
+          });
+
+          html += `</div>`;
+        });
+      }
+
+      // Render Vertical Today Indicator Line across the Gantt matrix
+      if (displayDays.includes(sliderActiveDay)) {
+        const activeIndex = displayDays.indexOf(sliderActiveDay);
+        const colWidthPercent = 100 / totalCols;
+        const leftPercent = (180 / (container.offsetWidth || 650) * 100) + (activeIndex * (100 - (180 / (container.offsetWidth || 650) * 100)) / totalCols);
+
+        html += `
+          <div class="pointer-events-none absolute top-0 bottom-0 z-30" style="left: calc(180px + ${activeIndex * 100 / totalCols}%); width: 2px;">
+            <div class="w-0.5 h-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.8)] relative">
+              <div class="absolute -top-1 -left-2 bg-rose-600 text-white text-[8px] font-bold px-1 rounded-sm shadow">
+                TODAY
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      container.innerHTML = html;
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('tableContent');
+      const badge = document.getElementById('tableCountBadge');
+      if (!tbody) return;
+
+      const filtered = postsData.filter(p => {
+        if (activeFilterStatus !== 'ALL' && p.status !== activeFilterStatus) return false;
+        if (activeFilterType !== 'ALL' && p.type !== activeFilterType) return false;
+        return true;
+      });
+
+      if (badge) badge.textContent = filtered.length;
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-slate-500 text-xs">No posts available</td></tr>`;
+        return;
+      }
+
+      let html = '';
+      filtered.forEach(p => {
+        const isMain = p.type === 'Main Video';
+        html += `
+          <tr class="hover:bg-slate-800/50 transition">
+            <td class="px-2.5 py-2 whitespace-nowrap font-medium text-slate-200">
+              <div class="font-bold">${p.date}</div>
+              <div class="text-[10px] text-slate-400">${p.weekday || ''}</div>
+            </td>
+            <td class="px-2.5 py-2 whitespace-nowrap">
+              <span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${isMain ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' : 'bg-slate-800 text-slate-300'}">
+                ${p.type}
+              </span>
+              <div class="text-[9px] text-slate-500 mt-0.5">${p.weekFigure || 'Week 1'}</div>
+            </td>
+            <td class="px-3 py-2 max-w-xs">
+              <div class="flex items-center gap-1 mb-1">
+                ${getLanguageBadges(p)}
+              </div>
+              <div class="font-arabic font-bold text-amber-200 truncate text-xs" dir="rtl">${p.titleArabic || '—'}</div>
+              <div class="text-[11px] text-slate-300 truncate">${p.titleEnglish || '—'}</div>
+            </td>
+            <td class="px-2 py-2 whitespace-nowrap font-mono text-[11px] text-slate-300">
+              <div>AR: <span class="text-amber-300 font-bold">${p.arabicPostTime || '18:00'}</span></div>
+              <div class="text-[10px] text-slate-500">EN: ${p.englishPostTime || '18:30'}</div>
+            </td>
+            <td class="px-2 py-2 whitespace-nowrap">
+              <div class="flex items-center gap-1.5">
+                ${renderPlatformIcons(p.platforms)}
+              </div>
+            </td>
+            <td class="px-2 py-2 whitespace-nowrap">
+              <span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                p.status === 'Done' ? 'bg-emerald-950 text-emerald-300 border border-emerald-700/50' :
+                p.status === 'In Progress' ? 'bg-purple-950 text-purple-300 border border-purple-700/50' :
+                'bg-blue-950 text-blue-300 border border-blue-700/50'
+              }">${p.status}</span>
+            </td>
+            <td class="px-2 py-2 whitespace-nowrap text-right">
+              <button onclick="openEditModal('${p.id}')" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-400 hover:text-amber-300 transition text-xs" title="Edit Post">
+                <i class="fa-solid fa-pen-to-square"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+
+      tbody.innerHTML = html;
+    }
+
+    let statusChartInstance = null;
+    let typeChartInstance = null;
+    let langChartInstance = null;
+
+    function renderAnalytics() {
+      // Metrics Counter Updates
+      const total = postsData.length;
+      const doneCount = postsData.filter(p => p.status === 'Done').length;
+      const schedCount = postsData.filter(p => p.status === 'Scheduled').length;
+      const inProgCount = postsData.filter(p => p.status === 'In Progress').length;
+      const mainWedCount = postsData.filter(p => p.type === 'Main Video' || p.weekday === 'Wednesday').length;
+      const storiesCount = postsData.filter(p => p.type === 'Story').length;
+
+      document.getElementById('metricTotal').textContent = total;
+      document.getElementById('metricDone').textContent = doneCount;
+      document.getElementById('metricScheduled').textContent = schedCount;
+      document.getElementById('metricInProgress').textContent = inProgCount;
+      document.getElementById('metricMainWed').textContent = mainWedCount;
+      document.getElementById('metricStories').textContent = storiesCount;
+
+      // Status Chart
+      const statusCanvas = document.getElementById('statusChart');
+      if (statusCanvas) {
+        if (statusChartInstance) statusChartInstance.destroy();
+        statusChartInstance = new Chart(statusCanvas, {
+          type: 'doughnut',
+          data: {
+            labels: ['Done', 'Scheduled', 'In Progress', 'Draft'],
+            datasets: [{
+              data: [
+                doneCount,
+                schedCount,
+                inProgCount,
+                postsData.filter(p => p.status === 'Draft').length
+              ],
+              backgroundColor: ['#10b981', '#3b82f6', '#a855f7', '#64748b'],
+              borderWidth: 0
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position: 'bottom', labels: { color: '#cbd5e1', font: { size: 10 } } }
+            }
+          }
+        });
+      }
+
+      // Type Chart
+      const typeCanvas = document.getElementById('typeChart');
+      if (typeCanvas) {
+        if (typeChartInstance) typeChartInstance.destroy();
+        typeChartInstance = new Chart(typeCanvas, {
+          type: 'pie',
+          data: {
+            labels: ['Main Video', 'Short / Reel', 'Story', 'Static Post'],
+            datasets: [{
+              data: [
+                postsData.filter(p => p.type === 'Main Video').length,
+                postsData.filter(p => p.type === 'Short / Reel').length,
+                postsData.filter(p => p.type === 'Story').length,
+                postsData.filter(p => p.type === 'Static Post').length
+              ],
+              backgroundColor: ['#f59e0b', '#10b981', '#ec4899', '#6366f1'],
+              borderWidth: 0
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position: 'bottom', labels: { color: '#cbd5e1', font: { size: 10 } } }
+            }
+          }
+        });
+      }
+
+      // Language Matrix Chart
+      const langCanvas = document.getElementById('languageChart');
+      if (langCanvas) {
+        if (langChartInstance) langChartInstance.destroy();
+        langChartInstance = new Chart(langCanvas, {
+          type: 'bar',
+          data: {
+            labels: ['Arabic (Primary)', 'English', 'Hindi'],
+            datasets: [{
+              label: 'Produced Posts',
+              data: [
+                postsData.filter(p => p.titleArabic).length,
+                postsData.filter(p => p.titleEnglish).length,
+                postsData.filter(p => p.titleHindi || p.hindiPostContent).length
+              ],
+              backgroundColor: ['#f59e0b', '#38bdf8', '#10b981'],
+              borderRadius: 6
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { display: false } },
+              y: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: '#1e293b' } }
+            }
+          }
+        });
+      }
+
+      // Insight Text
+      const insightEl = document.getElementById('analyticsInsightText');
+      if (insightEl) {
+        const nextPost = postsData.find(p => p.status === 'Scheduled');
+        if (nextPost) {
+          insightEl.textContent = `Next upcoming publication: "${nextPost.titleArabic || nextPost.titleEnglish}" scheduled on ${nextPost.date} (${nextPost.weekday}) at ${nextPost.arabicPostTime || '18:00'} KSA. Campaign is currently on track with ${doneCount} of ${total} deliverables completed.`;
+        } else {
+          insightEl.textContent = `All scheduled milestones have been finalized or no upcoming scheduled posts remain in this active campaign cycle.`;
+        }
+      }
+    }
+
+    function renderAllViews() {
+      renderCalendar();
+      renderGantt();
+      renderTable();
+      renderAnalytics();
+    }
+
+    function handleTodaySliderChange(dayVal) {
+      sliderActiveDay = parseInt(dayVal);
+      const year = currentViewingDate.getFullYear();
+      const month = currentViewingDate.getMonth();
+      const dateObj = new Date(year, month, sliderActiveDay);
+      const dateStr = formatDateStr(dateObj);
+      const weekday = weekdayNames[dateObj.getDay()];
+
+      const display = document.getElementById('sliderDateDisplay');
+      if (display) display.textContent = `${dateStr} (${weekday.substring(0,3)})`;
+
+      renderCalendar();
+      renderGantt();
+    }
+
+    function stepTodaySlider(step) {
+      const slider = document.getElementById('todayRangeSlider');
+      if (!slider) return;
+      let nextVal = sliderActiveDay + step;
+      if (nextVal < 1) nextVal = 1;
+      if (nextVal > 30) nextVal = 30;
+      slider.value = nextVal;
+      handleTodaySliderChange(nextVal);
+    }
+
+    function resetTodaySliderToCampaign() {
+      const slider = document.getElementById('todayRangeSlider');
+      if (slider) slider.value = 6;
+      handleTodaySliderChange(6);
+      showToast('Timeline focused on Campaign Launch (Nov 6)', 'info');
+    }
+
+    function resetTodaySliderToReal() {
+      const now = new Date();
+      currentViewingDate = new Date(now.getFullYear(), now.getMonth(), 1);
+      const slider = document.getElementById('todayRangeSlider');
+      if (slider) slider.value = now.getDate();
+      handleTodaySliderChange(now.getDate());
+      showToast('Timeline synchronized with real-world date', 'info');
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('border-emerald-500', 'text-emerald-400', 'bg-slate-800/60', 'font-bold');
+        btn.classList.add('border-transparent', 'text-slate-400');
+      });
+      document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.add('hidden'));
+
+      const activeBtn = document.getElementById(`tabBtn-${tabId}`);
+      const activePanel = document.getElementById(tabId);
+
+      if (activeBtn) {
+        activeBtn.classList.remove('border-transparent', 'text-slate-400');
+        activeBtn.classList.add('border-emerald-500', 'text-emerald-400', 'bg-slate-800/60', 'font-bold');
+      }
+      if (activePanel) activePanel.classList.remove('hidden');
+
+      if (tabId === 'ganttTab') renderGantt();
+      if (tabId === 'analyticsTab') renderAnalytics();
+      if (tabId === 'feedTab') renderTable();
+    }
+
+    function setLanguageFilter(lang) {
+      activeFilterLang = lang;
+      document.querySelectorAll('#langButtonGroup .filter-btn').forEach(btn => {
+        if (btn.getAttribute('data-lang') === lang) btn.classList.add('active');
+        else btn.classList.remove('active');
+      });
+      renderAllViews();
+    }
+
+    function setStatusFilter(status) {
+      activeFilterStatus = status;
+      document.querySelectorAll('#statusButtonGroup .filter-btn-gold').forEach(btn => {
+        if (btn.getAttribute('data-status') === status) btn.classList.add('active');
+        else btn.classList.remove('active');
+      });
+      renderAllViews();
+    }
+
+    function setTypeFilter(type) {
+      activeFilterType = type;
+      document.querySelectorAll('#typeButtonGroup .filter-btn').forEach(btn => {
+        if (btn.getAttribute('data-type') === type) btn.classList.add('active');
+        else btn.classList.remove('active');
+      });
+      renderAllViews();
+    }
+
+    function setGanttFilter(scale) {
+      ganttScale = scale;
+      const monthBtn = document.getElementById('ganttFilterMonth');
+      const weekBtn = document.getElementById('ganttFilterWeek');
+      if (scale === 'month') {
+        if (monthBtn) monthBtn.className = 'px-2.5 py-1 rounded font-semibold bg-emerald-600 text-white transition';
+        if (weekBtn) weekBtn.className = 'px-2.5 py-1 rounded font-semibold text-slate-400 hover:text-white transition';
+      } else {
+        if (monthBtn) monthBtn.className = 'px-2.5 py-1 rounded font-semibold text-slate-400 hover:text-white transition';
+        if (weekBtn) weekBtn.className = 'px-2.5 py-1 rounded font-semibold bg-emerald-600 text-white transition';
+      }
+      renderGantt();
+    }
+
+    function changeMonth(delta) {
+      currentViewingDate.setMonth(currentViewingDate.getMonth() + delta);
+      renderAllViews();
+    }
+
+    function jumpToCurrentMonth() {
+      currentViewingDate = new Date(2024, 10, 1);
+      renderAllViews();
+    }
+
+    function handleSearch(term) {
+      const q = term.toLowerCase().trim();
+      if (!q) {
+        renderAllViews();
+        return;
+      }
+      const filtered = postsData.filter(p => 
+        (p.titleArabic && p.titleArabic.toLowerCase().includes(q)) ||
+        (p.titleEnglish && p.titleEnglish.toLowerCase().includes(q)) ||
+        (p.arabicPostTime && p.arabicPostTime.includes(q)) ||
+        (p.status && p.status.toLowerCase().includes(q))
+      );
+      // Temporarily re-render views with search subset
+      const orig = postsData;
+      postsData = filtered;
+      renderCalendar();
+      renderGantt();
+      renderTable();
+      postsData = orig;
+    }
+
+    function openShiftModal() {
+      const modal = document.getElementById('shiftModal');
+      const input = document.getElementById('newCampaignStartDate');
+      if (!modal || !input) return;
+      if (postsData.length > 0) input.value = postsData[0].date;
+      modal.classList.remove('hidden');
+    }
+
+    function closeShiftModal() {
+      const modal = document.getElementById('shiftModal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function applyDateShift() {
+      const input = document.getElementById('newCampaignStartDate');
+      if (!input || !input.value) return;
+
+      const newStart = new Date(input.value);
+      if (isNaN(newStart.getTime())) {
+        showToast('Invalid date selected', 'error');
+        return;
+      }
+
+      if (postsData.length === 0) return;
+      const sorted = [...postsData].sort((a,b) => new Date(a.date) - new Date(b.date));
+      const oldStart = new Date(sorted[0].date);
+      const diffMs = newStart.getTime() - oldStart.getTime();
+
+      postsData.forEach(p => {
+        const curDate = new Date(p.date);
+        const shifted = new Date(curDate.getTime() + diffMs);
+        p.date = formatDateStr(shifted);
+        p.weekday = weekdayNames[shifted.getDay()];
+      });
+
+      closeShiftModal();
+      showToast('All campaign dates shifted successfully!', 'success');
+      currentViewingDate = new Date(newStart.getFullYear(), newStart.getMonth(), 1);
+      renderAllViews();
+    }
+
+    function exportToExcel() {
+      if (postsData.length === 0) {
+        showToast('No post data to export', 'warning');
+        return;
+      }
+
+      const rows = postsData.map(p => ({
+        "Day": p.dayNumber || '1',
+        "Date": p.date || '',
+        "Weekday": p.weekday || '',
+        "Week / figure": p.weekFigure || '',
+        "Type": p.type || '',
+        "Arabic post time (KSA)": p.arabicPostTime || '18:00',
+        "English post time (KSA)": p.englishPostTime || '18:30',
+        "Hindi post time (KSA)": p.hindiPostTime || '19:00',
+        "Story times (KSA)": p.storyTimes || '14:00, 20:30',
+        "Platform": Array.isArray(p.platforms) ? p.platforms.join(', ') : (p.platforms || ''),
+        "Format": p.format || '',
+        "Post idea / working title (EN)": p.titleEnglish || '',
+        "Title (Arabic)": p.titleArabic || '',
+        "Hook (EN)": p.hookEnglish || p.titleEnglish || '',
+        "Hook (Arabic)": p.hookArabic || p.titleArabic || '',
+        "Exact filming / creation checklist": p.filmingChecklist || 'Script approved; Voiceover recorded',
+        "Arabic post content (caption)": p.arabicPostContent || '',
+        "English post content (caption)": p.englishPostContent || '',
+        "Hindi post content (caption)": p.hindiPostContent || '',
+        "Story 1 — VIDEO story (mandatory): plan": p.story1Plan || 'Video teaser highlight',
+        "Story 1 — Arabic text": p.story1Arabic || 'شاهد الفيديو الكامل على يوتيوب',
+        "Story 2 — STATIC story (mandatory): plan": p.story2Plan || 'Graphic quote and engagement quiz',
+        "Story 2 — Arabic text": p.story2Arabic || 'شاركنا رأيك في التعليقات',
+        "CTA": p.cta || 'اشترك وشارك المقطع لدعم نشر التاريخ الإسلامي',
+        "Action / research task": p.actionTask || 'Review historical citations',
+        "KPI to log": p.kpiToLog || 'Retention > 45%, 15K views'
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(rows);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "3-Week Calendar");
+      XLSX.writeFile(workbook, "islamic_history_video_social_media_calendar (2)_2.xlsx");
+      showToast('Excel file exported with Columns A–Z!', 'success');
+    }
+
+    function exportToJSON() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(postsData, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", "islamic_history_social_media_calendar.json");
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+      showToast('JSON backup exported successfully!', 'success');
+    }
+
+    function handleFileImport(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      const isJson = file.name.endsWith('.json');
+
+      reader.onload = function(e) {
+        try {
+          if (isJson) {
+            const parsed = JSON.parse(e.target.result);
+            if (Array.isArray(parsed)) {
+              postsData = parsed;
+              showToast('JSON data imported successfully!', 'success');
+              renderAllViews();
+            } else {
+              showToast('Invalid JSON structure', 'error');
+            }
+          } else {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const sheetName = workbook.SheetNames.includes("3-Week Calendar") ? "3-Week Calendar" : workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[sheetName];
+            const jsonRows = XLSX.utils.sheet_to_json(worksheet);
+
+            if (jsonRows.length === 0) {
+              showToast('Imported spreadsheet is empty', 'warning');
+              return;
+            }
+
+            postsData = jsonRows.map((r, idx) => {
+              const dStr = r["Date"] ? String(r["Date"]).trim() : '';
+              return {
+                id: `import-${idx}-${Date.now()}`,
+                dayNumber: r["Day"] || String(idx + 1),
+                date: dStr,
+                weekday: r["Weekday"] || (dStr ? weekdayNames[new Date(dStr).getDay()] : ''),
+                weekFigure: r["Week / figure"] || 'Week 1',
+                type: r["Type"] || 'Short / Reel',
+                isMainVideo: r["Type"] === 'Main Video' || r["Weekday"] === 'Wednesday',
+                arabicPostTime: r["Arabic post time (KSA)"] || '18:00',
+                englishPostTime: r["English post time (KSA)"] || '18:30',
+                hindiPostTime: r["Hindi post time (KSA)"] || '19:00',
+                storyTimes: r["Story times (KSA)"] || '14:00, 20:30',
+                platforms: r["Platform"] ? r["Platform"].split(',').map(s => s.trim()) : ['YouTube'],
+                format: r["Format"] || '16:9 Landscape Video',
+                titleArabic: r["Title (Arabic)"] || '',
+                titleEnglish: r["Post idea / working title (EN)"] || '',
+                titleHindi: '',
+                arabicPostContent: r["Arabic post content (caption)"] || '',
+                englishPostContent: r["English post content (caption)"] || '',
+                hindiPostContent: r["Hindi post content (caption)"] || '',
+                arabicHashtags: '#تاريخ_إسلامي',
+                englishHashtags: '#IslamicHistory',
+                hindiHashtags: '#इस्लामीइतिहास',
+                arabicKeywords: '',
+                englishKeywords: '',
+                hindiKeywords: '',
+                hookArabic: r["Hook (Arabic)"] || '',
+                hookEnglish: r["Hook (EN)"] || '',
+                filmingChecklist: r["Exact filming / creation checklist"] || '',
+                story1Plan: r["Story 1 — VIDEO story (mandatory): plan"] || '',
+                story1Arabic: r["Story 1 — Arabic text"] || '',
+                story2Plan: r["Story 2 — STATIC story (mandatory): plan"] || '',
+                story2Arabic: r["Story 2 — Arabic text"] || '',
+                cta: r["CTA"] || '',
+                actionTask: r["Action / research task"] || '',
+                kpiToLog: r["KPI to log"] || '',
+                status: 'Scheduled'
+              };
+            });
+
+            showToast(`Imported ${postsData.length} posts from "${sheetName}"!`, 'success');
+            renderAllViews();
+          }
+        } catch (err) {
+          showToast('Failed to parse file: ' + err.message, 'error');
+        }
+      };
+
+      if (isJson) reader.readAsText(file);
+      else reader.readAsArrayBuffer(file);
+      event.target.value = '';
+    }
+
+    function formatDateStr(d) {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function loadInitialData() {
+      postsData = [
+        {
+          id: 'post-1',
+          dayNumber: '1',
+          date: '2024-11-02',
+          weekday: 'Saturday',
+          weekFigure: 'Week 1',
+          type: 'Short / Reel',
+          isMainVideo: false,
+          arabicPostTime: '18:00',
+          englishPostTime: '18:30',
+          hindiPostTime: '19:00',
+          storyTimes: '14:00, 20:30',
+          platforms: ['YouTube', 'TikTok', 'Instagram'],
+          format: '9:16 Vertical Reel (45s)',
+          titleArabic: 'بيت الحكمة: مكتبة غيرت مسار التاريخ البشري',
+          titleEnglish: 'House of Wisdom: The Baghdad Library That Saved Civilization',
+          titleHindi: 'बैत अल-हिकमा: बगदाद का पुस्तकालय',
+          arabicPostContent: 'كيف جمعت بغداد علوم الإغريق وفارس والهند في أعظم صرح معرفي عرفته البشرية؟ #تاريخ_إسلامي #بغداد #حضارة',
+          englishPostContent: 'How Baghdad preserved the intellectual wealth of human civilization. #IslamicHistory #Baghdad #Science',
+          hindiPostContent: 'कैसे बगदाद ने दुनिया के ज्ञान को संरक्षित किया। #इस्लामीइतिहास',
+          arabicHashtags: '#تاريخ_إسلامي #بغداد #حضارة',
+          englishHashtags: '#IslamicHistory #Baghdad #Science',
+          hindiHashtags: '#इस्लामीइतिहास',
+          status: 'Done'
+        },
+        {
+          id: 'post-2',
+          dayNumber: '2',
+          date: '2024-11-03',
+          weekday: 'Sunday',
+          weekFigure: 'Week 1',
+          type: 'Static Post',
+          isMainVideo: false,
+          arabicPostTime: '18:00',
+          englishPostTime: '18:30',
+          hindiPostTime: '19:00',
+          storyTimes: '14:00, 20:30',
+          platforms: ['Instagram', 'Facebook', 'X'],
+          format: '1:1 Square Carousel',
+          titleArabic: 'الخوارزمي: مخترع الصفر ومؤسس علم الجبر',
+          titleEnglish: 'Al-Khwarizmi: The Father of Modern Algebra and Algorithms',
+          titleHindi: 'अल-ख्वारिज्मी: बीजगणित के जनक',
+          arabicPostContent: 'بدون أبحاث الخوارزمي، لم تكن الهواتف الذكية أو الحواسيب لترى النور. #علماء_المسلمين #الخوارزمي',
+          englishPostContent: 'Without his mathematical foundation, modern computers would not exist. #Algorithm #Mathematics',
+          hindiPostContent: 'आधुनिक कंप्यूटर और बीजगणित के जनक। #गणित',
+          arabicHashtags: '#علماء_المسلمين #الخوارزمي',
+          englishHashtags: '#Algorithm #Mathematics',
+          hindiHashtags: '#गणित',
+          status: 'Done'
+        },
+        {
+          id: 'post-3',
+          dayNumber: '3',
+          date: '2024-11-04',
+          weekday: 'Monday',
+          weekFigure: 'Week 1',
+          type: 'Story',
+          isMainVideo: false,
+          arabicPostTime: '18:00',
+          englishPostTime: '18:30',
+          hindiPostTime: '19:00',
+          storyTimes: '14:00, 20:30',
+          platforms: ['Instagram', 'TikTok'],
+          format: '9:16 Vertical Story (15s)',
+          titleArabic: 'سلاح الإغريق السري: كيف حطم الأسطول الأموي حصار القسطنطينية؟',
+          titleEnglish: 'Greek Fire and the Umayyad Fleet at Constantinople',
+          titleHindi: 'कॉन्स्टेंटिनोपल की घेराबंदी',
+          arabicPostContent: 'قصة النار الإغريقية والصمود العسكري في أول حصارات القسطنطينية البحرية. #تاريخ_إسلامي #معارك',
+          englishPostContent: 'The naval confrontation that changed Mediterranean maritime tactics. #NavalHistory #Byzantine',
+          hindiPostContent: 'उमय्यद नौसेना और ग्रीक फायर का रहस्य। #इतिहास',
+          arabicHashtags: '#تاريخ_إسلامي #معارك',
+          englishHashtags: '#NavalHistory #Byzantine',
+          hindiHashtags: '#इतिहास',
+          status: 'In Progress'
+        },
+        {
+          id: 'post-4',
+          dayNumber: '4',
+          date: '2024-11-05',
+          weekday: 'Tuesday',
+          weekFigure: 'Week 1',
+          type: 'Short / Reel',
+          isMainVideo: false,
+          arabicPostTime: '18:00',
+          englishPostTime: '18:30',
+          hindiPostTime: '19:00',
+          storyTimes: '14:00, 20:30',
+          platforms: ['YouTube', 'TikTok'],
+          format: '9:16 Vertical Reel (45s)',
+          titleArabic: 'ابن الهيثم: البصريات والمؤسس الحقيقي للمنهج العلمي',
+          titleEnglish: 'Ibn al-Haytham: The Father of Optics and the Scientific Method',
+          titleHindi: 'इब्न अल-हैथम: प्रकाशिकी के जनक',
+          arabicPostContent: 'من زنزانته في القاهرة، فكك ابن الهيثم أوهام البصريات القديمة وابتكر المنهج التجريبي. #ابن_الهيثم #علوم',
+          englishPostContent: 'From a prison cell in Cairo, he proved how light truly enters the human eye. #Optics #Science',
+          hindiPostContent: 'प्रायोगिक वैज्ञानिक पद्धति के जन्मदाता। #विज्ञान',
+          arabicHashtags: '#ابن_الهيثم #علوم',
+          englishHashtags: '#Optics #Science',
+          hindiHashtags: '#विज्ञान',
+          status: 'Scheduled'
+        },
+        {
+          id: 'post-5',
+          dayNumber: '5',
+          date: '2024-11-06',
+          weekday: 'Wednesday',
+          weekFigure: 'Week 1',
+          type: 'Main Video',
+          isMainVideo: true,
+          arabicPostTime: '18:00',
+          englishPostTime: '18:30',
+          hindiPostTime: '19:00',
+          storyTimes: '14:00, 20:30',
+          platforms: ['YouTube', 'Facebook'],
+          format: '16:9 Landscape Video (12m)',
+          titleArabic: 'وثائقي: معركة حطين وسقوط مملكة بيت المقدس',
+          titleEnglish: 'Documentary: Battle of Hattin & The Liberation of Jerusalem',
+          titleHindi: 'हत्तीन की लड़ाई: यरुशलम का इतिहास',
+          arabicPostContent: 'الفيلم الوثائقي الكامل: العبقرية العسكرية لصلاح الدين الأيوبي في استدراج الصليبيين إلى قرون حطين وعطش الصحراء. #حطين #صلاح_الدين #وثائقي',
+          englishPostContent: 'Full 16:9 Documentary: The tactical masterpiece of Saladin leading up to the horns of Hattin. #Hattin #Saladin #Documentary',
+          hindiPostContent: 'सलाहुद्दीन अय्यूबी और हत्तीन की ऐतिहासिक लड़ाई का पूरा वृत्तचित्र। #इतिहास',
+          arabicHashtags: '#حطين #صلاح_الدين #وثائقي',
+          englishHashtags: '#Hattin #Saladin #Documentary',
+          hindiHashtags: '#इतिहास',
+          status: 'Scheduled'
+        },
+        {
+          id: 'post-6',
+          dayNumber: '6',
+          date: '2024-11-07',
+          weekday: 'Thursday',
+          weekFigure: 'Week 1',
+          type: 'Short / Reel',
+          isMainVideo: false,
+          arabicPostTime: '18:00',
+          englishPostTime: '18:30',
+          hindiPostTime: '19:00',
+          storyTimes: '14:00, 20:30',
+          platforms: ['YouTube', 'TikTok', 'Instagram'],
+          format: '9:16 Vertical Reel (45s)',
+          titleArabic: 'حنين بن إسحاق: المترجم الذي وزنت كتبه ذهباً',
+          titleEnglish: 'Hunayn ibn Ishaq: The Translator Weighed in Gold',
+          titleHindi: 'हुनैन इब्न इसहाक: सोने से तौले गए अनुवादक',
+          arabicPostContent: 'طبيب العباسيين الذي كان الخليفة المأمون يعطيه وزن ترجماته سبائك ذهبية تكريماً للعلم. #بغداد #المأمون',
+          englishPostContent: 'The master scholar whose manuscripts were literally weighed against pure gold bullion. #Baghdad #Translation',
+          hindiPostContent: 'वह विद्वान जिनकी पुस्तकों को सोने के बराबर तौला गया था। #इतिहास',
+          arabicHashtags: '#بغداد #المأمون',
+          englishHashtags: '#Baghdad #Translation',
+          hindiHashtags: '#इतिहास',
+          status: 'Scheduled'
+        },
+        {
+          id: 'post-7',
+          dayNumber: '7',
+          date: '2024-11-08',
+          weekday: 'Friday',
+          weekFigure: 'Week 1',
+          type: 'Static Post',
+          isMainVideo: false,
+          arabicPostTime: '18:00',
+          englishPostTime: '18:30',
+          hindiPostTime: '19:00',
+          storyTimes: '14:00, 20:30',
+          platforms: ['Instagram', 'Facebook', 'X'],
+          format: '1:1 Square Carousel',
+          titleArabic: 'جامع القرويين: أقدم جامعة مستمرة في العالم بفاس',
+          titleEnglish: 'University of al-Qarawiyyin: World’s Oldest Continual University',
+          titleHindi: 'अल-करावीयीन विश्वविद्यालय',
+          arabicPostContent: 'أسستها السيدة فاطمة الفهرية عام 859م وخرجت كبار فلاسفة وعلماء الحضارة. #فاس #المغرب #تاريخ',
+          englishPostContent: 'Founded in 859 AD by Fatima al-Fihri, standing for over a millennium. #Morocco #Education',
+          hindiPostContent: 'दुनिया का सबसे पुराना विश्वविद्यालय। #शिक्षा',
+          arabicHashtags: '#فاس #المغرب #تاريخ',
+          englishHashtags: '#Morocco #Education',
+          hindiHashtags: '#शिक्षा',
+          status: 'Scheduled'
+        },
+        {
+          id: 'post-8',
+          dayNumber: '12',
+          date: '2024-11-13',
+          weekday: 'Wednesday',
+          weekFigure: 'Week 2',
+          type: 'Main Video',
+          isMainVideo: true,
+          arabicPostTime: '18:00',
+          englishPostTime: '18:30',
+          hindiPostTime: '19:00',
+          storyTimes: '14:00, 20:30',
+          platforms: ['YouTube', 'Facebook'],
+          format: '16:9 Landscape Video (15m)',
+          titleArabic: 'وثائقي: معركة ملاذكرد وبداية تحول آسيا الصغرى',
+          titleEnglish: 'Documentary: Battle of Manzikert 1071 & Alp Arslan',
+          titleHindi: 'मंज़िकर्ट की लड़ाई 1071',
+          arabicPostContent: 'الفيلم الوثائقي الرئيسي للأسبوع الثاني: انتصار السلاجقة الحاسم بقيادة ألب أرسلان وفتح أبواب الأناضول. #ملاذكرد #السلاجقة #وثائقي',
+          englishPostContent: 'The clash of empires that permanently reshaped the geopolitics of Anatolia. #Manzikert #Seljuk #Documentary',
+          hindiPostContent: 'अल्प अर्सलान और मंज़िकर्ट की लड़ाई का पूरा विश्लेषण। #दस्तावेजी',
+          arabicHashtags: '#ملاذكرد #السلاجقة #وثائقي',
+          englishHashtags: '#Manzikert #Seljuk #Documentary',
+          hindiHashtags: '#दस्तावेजी',
+          status: 'Scheduled'
+        },
+        {
+          id: 'post-9',
+          dayNumber: '19',
+          date: '2024-11-20',
+          weekday: 'Wednesday',
+          weekFigure: 'Week 3',
+          type: 'Main Video',
+          isMainVideo: true,
+          arabicPostTime: '18:00',
+          englishPostTime: '18:30',
+          hindiPostTime: '19:00',
+          storyTimes: '14:00, 20:30',
+          platforms: ['YouTube', 'Facebook'],
+          format: '16:9 Landscape Video (18m)',
+          titleArabic: 'وثائقي: معركة عين جالوت وسقوط أسطورة المغول',
+          titleEnglish: 'Documentary: Battle of Ain Jalut & The Defeat of the Mongols',
+          titleHindi: 'ऐन जालूत की लड़ाई और मंगोलों की हार',
+          arabicPostContent: 'سيف الدين قطز والظاهر بيبرس في المعركة الفاصلة التي أنقذت بلاد الشام ومصر من الدمار المغولي. #عين_جالوت #المماليك',
+          englishPostContent: 'The first decisive defeat of the Mongol Empire in the Levant. #AinJalut #Mamluk #History',
+          hindiPostContent: 'मंगोल सेना की पहली निर्णायक हार। #इतिहास',
+          arabicHashtags: '#عين_جالوت #المماليك',
+          englishHashtags: '#AinJalut #Mamluk #History',
+          hindiHashtags: '#इतिहास',
+          status: 'Scheduled'
+        }
+      ];
+    }
+
+    function resetToOriginalData() {
+      loadInitialData();
+      currentViewingDate = new Date(2024, 10, 1);
+      sliderActiveDay = 6;
+      showToast('Dataset reset to original 3-Week schedule', 'info');
+      renderAllViews();
+    }
+
+    // Live Riyadh (KSA) Date & Time Updater
+    function updateRiyadhClock() {
+      const dateEl = document.getElementById('riyadhDateDisplay');
+      const timeEl = document.getElementById('riyadhTimeDisplay');
+      if (!dateEl || !timeEl) return;
+
+      const now = new Date();
+      const optionsDate = { timeZone: 'Asia/Riyadh', year: 'numeric', month: 'short', day: 'numeric', weekday: 'short' };
+      const optionsTime = { timeZone: 'Asia/Riyadh', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+
+      dateEl.textContent = now.toLocaleDateString('en-US', optionsDate);
+      timeEl.textContent = now.toLocaleTimeString('en-US', optionsTime);
+    }
+
+    // Launch application upon page load
+    window.addEventListener('DOMContentLoaded', () => {
+      loadInitialData();
+      renderAllViews();
+      updateRiyadhClock();
+      setInterval(updateRiyadhClock, 1000);
+    });
+  </script>
+</body>
+</html>

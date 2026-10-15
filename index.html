@@ -12,6 +12,8 @@
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
   <!-- Chart.js for Visual Analytics -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Supabase JS v2 Client -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Amiri:wght@400;700&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap');
     body {
@@ -80,6 +82,33 @@
 </head>
 <body class="h-screen flex flex-col overflow-hidden bg-slate-950 text-slate-100">
 
+<!-- Google Login Overlay -->
+<div id="authOverlay" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 backdrop-blur-md transition-opacity duration-300">
+  <div class="w-full max-w-md p-8 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl text-center">
+    <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-tr from-amber-500 to-rose-500 flex items-center justify-center text-white text-2xl shadow-lg shadow-amber-500/20">
+      <i class="fa-solid fa-calendar-days"></i>
+    </div>
+    <h2 class="text-2xl font-bold text-slate-100 tracking-tight">Stay With Me</h2>
+    <p class="text-sm text-slate-400 mt-1 mb-6">Social Media Video Content Management</p>
+
+    <div class="p-4 bg-slate-800/50 rounded-xl border border-slate-700/60 mb-6 text-xs text-slate-400 text-left space-y-1">
+      <p class="flex items-center gap-2"><i class="fa-solid fa-shield-halved text-emerald-400"></i> Secure cloud database via Supabase</p>
+      <p class="flex items-center gap-2"><i class="fa-solid fa-arrows-rotate text-sky-400"></i> Real-time multi-device collaboration</p>
+    </div>
+
+    <!-- Sign In With Google Button -->
+    <button id="googleSignInBtn" onclick="signInWithGoogle()" class="w-full flex items-center justify-center gap-3 px-5 py-3.5 bg-white hover:bg-slate-100 text-slate-900 font-semibold rounded-xl transition shadow-md hover:shadow-lg active:scale-[0.99]">
+      <svg class="w-5 h-5" viewBox="0 0 24 24">
+        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+      </svg>
+      Sign in with Google
+    </button>
+  </div>
+</div>
+
   <!-- Top App Bar -->
   <header class="bg-slate-900 border-b border-slate-800 px-4 py-2 shrink-0 flex flex-wrap items-center justify-between gap-3 shadow-md z-20">
     <div class="flex items-center space-x-3">
@@ -144,6 +173,29 @@
         <span>Import</span>
         <input type="file" id="importFileInput" accept=".xlsx,.xls,.json" class="hidden" onchange="handleFileImport(event)">
       </label>
+
+<!-- Supabase User Bar & Cloud Status (Hidden until logged in) -->
+<div id="userProfileArea" class="hidden items-center gap-3">
+  <!-- Live Sync Badge -->
+  <div class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-950/60 border border-emerald-800 text-[11px] text-emerald-300">
+    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+    <span>Live Cloud Sync</span>
+  </div>
+
+  <!-- Seed Initial Data to Supabase Button (Visible when table is empty) -->
+  <button id="seedDataBtn" onclick="seedDefaultDataToSupabase()" class="hidden px-2.5 py-1 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 rounded-lg text-xs font-medium transition" title="Upload default 3-week posts to Supabase">
+    <i class="fa-solid fa-cloud-arrow-up mr-1"></i> Seed to DB
+  </button>
+
+  <!-- User Card -->
+  <div class="flex items-center gap-2 bg-slate-800/80 px-2.5 py-1 rounded-xl border border-slate-700/80">
+    <img id="userAvatar" src="" alt="Avatar" class="w-6 h-6 rounded-full border border-slate-600 hidden" />
+    <span id="userName" class="text-xs font-medium text-slate-200 truncate max-w-[130px]">User</span>
+    <button onclick="signOutUser()" class="text-xs text-rose-400 hover:text-rose-300 p-1 hover:bg-rose-950/50 rounded transition" title="Sign Out">
+      <i class="fa-solid fa-right-from-bracket"></i>
+    </button>
+  </div>
+</div>
 
       <!-- Reset data to default -->
       <button onclick="resetToOriginalData()" title="Reset to original 3-Week dataset" class="p-2 text-xs rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 border border-slate-700 transition">
@@ -1237,6 +1289,9 @@
         showToast('New post added to calendar!', 'success');
       }
 
+      // 🚀 Save directly to Supabase cloud database
+      savePostToSupabase(postObj);
+
       postsData.sort((a, b) => new Date(a.date) - new Date(b.date));
 
       closeEditModal();
@@ -1245,7 +1300,12 @@
 
     function deleteCurrentPost() {
       if (!selectedPostId) return;
-      postsData = postsData.filter(p => p.id !== selectedPostId);
+      const idToDelete = selectedPostId;
+      postsData = postsData.filter(p => p.id !== idToDelete);
+      
+      // 🚀 Delete from Supabase cloud database
+      deletePostFromSupabase(idToDelete);
+
       closeEditModal();
       showToast('Post deleted from calendar', 'info');
       renderAllViews();
@@ -2309,12 +2369,239 @@
       timeEl.textContent = now.toLocaleTimeString('en-US', optionsTime);
     }
 
+
+/* ==========================================================================
+   SUPABASE CLIENT & AUTH CONFIGURATION
+   ========================================================================== */
+const SUPABASE_URL = "https://cuftxvaapzkcdbioqlgz.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_hDS3z0qZDsdwdOJjfS40oA_wenAe5yL"; // <-- PASTE YOUR KEY HERE
+
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let currentUser = null;
+
+// 1. Google OAuth Sign-In
+async function signInWithGoogle() {
+  const { error } = await sb.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: window.location.origin + window.location.pathname
+    }
+  });
+  if (error) {
+    showToast("Google sign in failed: " + error.message, "error");
+  }
+}
+
+// 2. Sign-Out
+async function signOutUser() {
+  await sb.auth.signOut();
+  window.location.reload();
+}
+
+// 3. Auth State Observer & Session Setup
+async function initAuthAndData() {
+  // Listen for login/logout changes
+  sb.auth.onAuthStateChange(async (event, session) => {
+    if (session && session.user) {
+      currentUser = session.user;
+      setupUserUI(session.user);
+      await syncDataFromSupabase();
+      listenForRealtimeChanges();
+    } else {
+      currentUser = null;
+      document.getElementById('authOverlay').classList.remove('hidden');
+      document.getElementById('userProfileArea').classList.add('hidden');
+    }
+  });
+
+  // Check initial active session
+  const { data: { session } } = await sb.auth.getSession();
+  if (session && session.user) {
+    currentUser = session.user;
+    setupUserUI(session.user);
+    await syncDataFromSupabase();
+    listenForRealtimeChanges();
+  } else {
+    document.getElementById('authOverlay').classList.remove('hidden');
+    document.getElementById('userProfileArea').classList.add('hidden');
+  }
+}
+
+// Update Top Bar with User Info
+function setupUserUI(user) {
+  document.getElementById('authOverlay').classList.add('hidden');
+  const userArea = document.getElementById('userProfileArea');
+  userArea.classList.remove('hidden');
+  userArea.classList.add('flex');
+
+  const meta = user.user_metadata || {};
+  const nameEl = document.getElementById('userName');
+  const avatarEl = document.getElementById('userAvatar');
+
+  nameEl.textContent = meta.full_name || user.email.split('@')[0];
+  if (meta.avatar_url) {
+    avatarEl.src = meta.avatar_url;
+    avatarEl.classList.remove('hidden');
+  }
+}
+
+/* ==========================================================================
+   DATABASE CRUD & REAL-TIME SYNCHRONIZATION
+   ========================================================================== */
+
+// Fetch all rows from Supabase
+async function syncDataFromSupabase() {
+  try {
+    const { data, error } = await sb
+      .from('calendar_posts')
+      .select('*')
+      .order('post_date', { ascending: true });
+
+    if (error) throw error;
+
+    if (!data || data.length === 0) {
+      // If table is completely empty, show the "Seed to DB" button
+      document.getElementById('seedDataBtn')?.classList.remove('hidden');
+      showToast("Connected to Supabase. Database is empty. Click 'Seed to DB' to upload initial posts.", "info");
+      return;
+    }
+
+    document.getElementById('seedDataBtn')?.classList.add('hidden');
+
+    // Map Supabase columns back into postsData
+    postsData = data.map(row => ({
+      id: row.id,
+      dayNumber: String(row.day_number || 1),
+      date: row.post_date,
+      weekday: row.weekday || '',
+      weekFigure: row.week_figure || 'Week 1',
+      type: row.content_type || 'Main Video',
+      isMainVideo: row.content_type === 'Main Video' || row.weekday === 'Wednesday',
+      arabicPostTime: row.post_time_ar || '18:00',
+      englishPostTime: row.post_time_en || '18:30',
+      hindiPostTime: row.post_time_hi || '19:00',
+      storyTimes: row.story_times || '14:00, 20:30',
+      platforms: Array.isArray(row.platforms) ? row.platforms : ['YouTube'],
+      format: row.format || '16:9 Landscape Video',
+      titleEnglish: row.title_en || '',
+      titleArabic: row.title_ar || '',
+      titleHindi: row.caption_hi ? '' : '',
+      hookEnglish: row.hook_en || '',
+      hookArabic: row.hook_ar || '',
+      filmingChecklist: row.checklist || '',
+      arabicPostContent: row.caption_ar || '',
+      englishPostContent: row.caption_en || '',
+      hindiPostContent: row.caption_hi || '',
+      arabicHashtags: '#تاريخ_إسلامي',
+      englishHashtags: '#IslamicHistory',
+      hindiHashtags: '#इस्लामीइतिहास',
+      arabicKeywords: '',
+      englishKeywords: '',
+      hindiKeywords: '',
+      story1Plan: row.story1_plan || '',
+      story1Arabic: row.story1_ar || '',
+      story2Plan: row.story2_plan || '',
+      story2Arabic: row.story2_ar || '',
+      cta: row.cta || '',
+      actionTask: row.action_task || '',
+      kpiToLog: row.kpi_to_log || '',
+      status: row.status || 'Scheduled'
+    }));
+
+    renderAllViews();
+  } catch (err) {
+    console.error("Database fetch error:", err);
+    showToast("Error fetching from database: " + err.message, "error");
+  }
+}
+
+// Convert a local post object to Supabase row format
+function mapPostToSupabaseRow(p) {
+  return {
+    id: String(p.id),
+    day_number: parseInt(p.dayNumber) || 1,
+    post_date: p.date,
+    weekday: p.weekday || '',
+    week_figure: p.weekFigure || 'Week 1',
+    content_type: p.type || 'Main Video',
+    post_time_ar: p.arabicPostTime || '18:00',
+    post_time_en: p.englishPostTime || '18:30',
+    post_time_hi: p.hindiPostTime || '19:00',
+    story_times: p.storyTimes || '14:00, 20:30',
+    platforms: Array.isArray(p.platforms) ? p.platforms : ['YouTube'],
+    format: p.format || '16:9 Landscape Video',
+    title_en: p.titleEnglish || '',
+    title_ar: p.titleArabic || '',
+    hook_en: p.hookEnglish || '',
+    hook_ar: p.hookArabic || '',
+    checklist: p.filmingChecklist || '',
+    caption_ar: p.arabicPostContent || '',
+    caption_en: p.englishPostContent || '',
+    caption_hi: p.hindiPostContent || '',
+    story1_plan: p.story1Plan || '',
+    story1_ar: p.story1Arabic || '',
+    story2_plan: p.story2Plan || '',
+    story2_ar: p.story2Arabic || '',
+    cta: p.cta || '',
+    action_task: p.actionTask || '',
+    kpi_to_log: p.kpiToLog || '',
+    status: p.status || 'Scheduled',
+    updated_at: new Date().toISOString()
+  };
+}
+
+// Save or Update a single post to Supabase
+async function savePostToSupabase(post) {
+  if (!currentUser) return;
+  const row = mapPostToSupabaseRow(post);
+  const { error } = await sb.from('calendar_posts').upsert(row, { onConflict: 'id' });
+  if (error) {
+    console.error("Supabase upsert error:", error);
+    showToast("Cloud sync failed: " + error.message, "error");
+  }
+}
+
+// Delete post from Supabase
+async function deletePostFromSupabase(postId) {
+  if (!currentUser) return;
+  const { error } = await sb.from('calendar_posts').delete().eq('id', String(postId));
+  if (error) {
+    showToast("Delete from cloud failed: " + error.message, "error");
+  }
+}
+
+// One-click seed of the default sample data into Supabase
+async function seedDefaultDataToSupabase() {
+  if (!currentUser) return;
+  try {
+    const rows = postsData.map(mapPostToSupabaseRow);
+    const { error } = await sb.from('calendar_posts').upsert(rows, { onConflict: 'id' });
+    if (error) throw error;
+    showToast("Successfully seeded calendar data to Supabase!", "success");
+    document.getElementById('seedDataBtn')?.classList.add('hidden');
+    syncDataFromSupabase();
+  } catch (e) {
+    showToast("Seeding failed: " + e.message, "error");
+  }
+}
+
+// Realtime Channel: Listen for updates made by teammates
+function listenForRealtimeChanges() {
+  sb.channel('realtime_calendar')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'calendar_posts' }, () => {
+      syncDataFromSupabase();
+    })
+    .subscribe();
+}
     // Launch application upon page load
     window.addEventListener('DOMContentLoaded', () => {
       loadInitialData();
       renderAllViews();
       updateRiyadhClock();
       setInterval(updateRiyadhClock, 1000);
+      
+      // 🚀 Start Supabase authentication and cloud data sync
+      initAuthAndData();
     });
   </script>
 </body>

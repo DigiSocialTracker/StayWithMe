@@ -1861,7 +1861,7 @@ const now = new Date();
       if (modal) modal.classList.add('hidden');
     }
 
-    function applyDateShift() {
+    async function applyDateShift() {
       const input = document.getElementById('newCampaignStartDate');
       if (!input || !input.value) return;
 
@@ -1876,6 +1876,7 @@ const now = new Date();
       const oldStart = new Date(sorted[0].date);
       const diffMs = newStart.getTime() - oldStart.getTime();
 
+      // 1. Update dates locally in memory
       postsData.forEach(p => {
         const curDate = new Date(p.date);
         const shifted = new Date(curDate.getTime() + diffMs);
@@ -1884,9 +1885,20 @@ const now = new Date();
       });
 
       closeShiftModal();
-      showToast('All campaign dates shifted successfully!', 'success');
+      showToast('Shifting dates and saving to cloud...', 'info');
       currentViewingDate = new Date(newStart.getFullYear(), newStart.getMonth(), 1);
       renderAllViews();
+
+      // 2. Save all shifted dates permanently to Supabase
+      if (currentUser) {
+        const rows = postsData.map(mapPostToSupabaseRow);
+        const { error } = await sb.from('calendar_posts').upsert(rows, { onConflict: 'id' });
+        if (error) {
+          showToast("Failed to save shifted dates: " + error.message, "error");
+        } else {
+          showToast("All dates successfully shifted and saved to cloud!", "success");
+        }
+      }
     }
 
     function exportToExcel() {
@@ -2465,6 +2477,16 @@ async function syncDataFromSupabase() {
       kpiToLog: row.kpi_to_log || '',
       status: row.status || 'Scheduled'
     }));
+
+// ---> ADD THIS NEW BLOCK <---
+    // Automatically jump calendar to the month/year of the earliest database post
+    if (postsData.length > 0) {
+      const sortedByDate = [...postsData].sort((a,b) => new Date(a.date) - new Date(b.date));
+      const firstDate = new Date(sortedByDate[0].date);
+      currentViewingDate = new Date(firstDate.getFullYear(), firstDate.getMonth(), 1);
+      sliderActiveDay = firstDate.getDate();
+    }
+    // ---> END NEW BLOCK <---
 
     renderAllViews();
   } catch (err) {

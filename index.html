@@ -1471,6 +1471,7 @@ const now = new Date();
 
         cell.innerHTML = headerHtml + postsHtml;
         container.appendChild(cell);
+      } // <--- ADD THIS MISSING BRACE HERE
 
       // Trailing padding cells
       const totalCells = firstDayOfWeek + daysInMonth;

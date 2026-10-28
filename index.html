@@ -765,13 +765,13 @@
     let activeFilterLang = 'ALL';
     let activeFilterStatus = 'ALL';
     let activeFilterType = 'ALL';
-    let currentViewingDate = new Date(2024, 10, 1); // November 2024 (Month 10 is 0-indexed)
+const now = new Date();
+    let currentViewingDate = new Date(now.getFullYear(), now.getMonth(), 1); 
     let selectedPostId = null;
     let ganttScale = 'month'; // 'month' or 'week'
 
     // Interactive slider active day (1 to 30)
-    let sliderActiveDay = 6; // Default to Nov 6 (Wed Main Video)
-
+    let sliderActiveDay = now.getDate(); // Dynamically sets to today's date
     // Modal state
     let activeModalLang = 'AR';
     let modalSelectedPlatforms = ['YouTube', 'TikTok', 'Instagram'];
@@ -1820,8 +1820,10 @@
       renderAllViews();
     }
 
-    function jumpToCurrentMonth() {
-      currentViewingDate = new Date(2024, 10, 1);
+   function jumpToCurrentMonth() {
+      const now = new Date();
+      currentViewingDate = new Date(now.getFullYear(), now.getMonth(), 1);
+      sliderActiveDay = now.getDate(); // Also resets the TODAY highlight
       renderAllViews();
     }
 
@@ -2264,8 +2266,9 @@
 
     function resetToOriginalData() {
       loadInitialData();
-      currentViewingDate = new Date(2024, 10, 1);
-      sliderActiveDay = 6;
+      const now = new Date();
+      currentViewingDate = new Date(now.getFullYear(), now.getMonth(), 1);
+      sliderActiveDay = now.getDate();
       showToast('Dataset reset to original 3-Week schedule', 'info');
       renderAllViews();
     }

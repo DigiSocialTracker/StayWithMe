@@ -515,282 +515,190 @@
         <input type="hidden" id="postActionTask">
         <input type="hidden" id="postKPI">
 
-        <!-- 1. TOP LANGUAGE FILTER TABS (AR, ENG, HINDI) -->
-        <div class="bg-slate-950/70 p-1 rounded-xl border border-slate-800 flex items-center gap-1.5 shrink-0">
-          <button type="button" id="modalLangBtn-AR" onclick="setModalLanguageTab('AR')" class="flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 bg-emerald-600 text-white shadow-sm">
-            <i class="fa-solid fa-language"></i>
-            <span class="font-arabic text-sm">العربية (AR)</span>
-            <span class="text-[9px] bg-emerald-800/80 px-1.5 py-0.5 rounded uppercase">Main</span>
-          </button>
-          <button type="button" id="modalLangBtn-ENG" onclick="setModalLanguageTab('ENG')" class="flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 transition flex items-center justify-center gap-1.5">
-            <i class="fa-solid fa-globe"></i>
-            <span>ENG (English)</span>
-          </button>
-          <button type="button" id="modalLangBtn-HINDI" onclick="setModalLanguageTab('HINDI')" class="flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 transition flex items-center justify-center gap-1.5">
-            <i class="fa-solid fa-om"></i>
-            <span class="font-hindi text-sm">HINDI (हिंदी)</span>
-          </button>
-        </div>
+<div class="flex flex-col gap-4 mb-2">
+          <!-- CARD 1: PUBLISHING & SCHEDULE -->
+          <div class="bg-slate-950/50 p-3 sm:p-4 rounded-xl border border-slate-800 shadow-inner">
+            <h4 class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-1.5">
+              <i class="fa-solid fa-sliders"></i> Publishing & Schedule
+            </h4>
 
-        <!-- 2. CONTENT TYPE SELECTOR TABS -->
-        <div class="space-y-1">
-          <div class="flex items-center justify-between text-[11px]">
-            <label class="font-bold text-slate-300 flex items-center gap-1">
-              <i class="fa-solid fa-shapes text-amber-400"></i> Content Type:
-            </label>
-            <span id="postTypeBadge" class="text-[10px] font-bold text-amber-300 bg-amber-950/50 px-2 py-0.5 rounded border border-amber-800/40">Main Video</span>
-          </div>
-          <div class="grid grid-cols-4 gap-1.5" id="contentTypeButtonGroup">
-            <button type="button" onclick="setModalContentType('Main Video')" data-type="Main Video" class="type-sel-btn active py-2 px-2 rounded-xl border border-amber-500/50 bg-amber-500/20 text-amber-300 font-bold flex items-center justify-center gap-1 text-[11px] transition">
-              <i class="fa-solid fa-clapperboard"></i>
-              <span>Main Video</span>
-            </button>
-            <button type="button" onclick="setModalContentType('Short / Reel')" data-type="Short / Reel" class="type-sel-btn py-2 px-2 rounded-xl border border-slate-700 bg-slate-800 text-slate-300 font-medium hover:bg-slate-700 flex items-center justify-center gap-1 text-[11px] transition">
-              <i class="fa-solid fa-film"></i>
-              <span>Shorts/Reel</span>
-            </button>
-            <button type="button" onclick="setModalContentType('Static Post')" data-type="Static Post" class="type-sel-btn py-2 px-2 rounded-xl border border-slate-700 bg-slate-800 text-slate-300 font-medium hover:bg-slate-700 flex items-center justify-center gap-1 text-[11px] transition">
-              <i class="fa-solid fa-image"></i>
-              <span>Static Post</span>
-            </button>
-            <button type="button" onclick="setModalContentType('Story')" data-type="Story" class="type-sel-btn py-2 px-2 rounded-xl border border-slate-700 bg-slate-800 text-slate-300 font-medium hover:bg-slate-700 flex items-center justify-center gap-1 text-[11px] transition">
-              <i class="fa-solid fa-circle-notch"></i>
-              <span>Story</span>
-            </button>
-          </div>
-        </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+              <!-- Left Column: Date & Time -->
+              <div class="space-y-3">
+                <div>
+                  <div class="flex items-center justify-between mb-1.5">
+                    <label class="text-[11px] font-bold text-slate-300 flex items-center gap-1">
+                      <i class="fa-solid fa-calendar text-blue-400"></i> Publish Date:
+                    </label>
+                    <span id="autoScheduleBadge" class="text-[9px] font-semibold text-emerald-400 bg-emerald-950/50 px-1.5 py-0.5 rounded border border-emerald-800/40">
+                      Wednesday • Day 5
+                    </span>
+                  </div>
+                  <input type="date" id="postDateInput" onchange="handleModalDateChanged(this.value)" class="w-full bg-slate-900 text-slate-100 rounded-lg px-3 py-1.5 border border-slate-700 text-xs focus:border-amber-400 focus:ring-1 focus:ring-amber-400 focus:outline-none transition">
+                </div>
 
-        <!-- 3. DATE AUTO-CALCULATOR & MANUAL TIME ROW -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-slate-950/60 p-2.5 rounded-xl border border-slate-800">
-          <div>
-            <div class="flex items-center justify-between mb-1">
-              <label class="text-[11px] font-bold text-slate-300 flex items-center gap-1">
-                <i class="fa-solid fa-calendar text-blue-400"></i> Date:
+                <div>
+                  <div class="flex items-center justify-between mb-1.5">
+                    <label id="currentTimeLangLabel" class="text-[11px] font-bold text-slate-300 flex items-center gap-1">
+                      <i class="fa-solid fa-clock text-amber-400"></i> Time (KSA):
+                    </label>
+                  </div>
+                  <div class="relative">
+                    <input type="time" id="postTimeInput" onchange="handleModalTimeChanged(this.value)" class="w-full bg-slate-900 text-slate-100 rounded-lg pl-3 pr-8 py-1.5 border border-slate-700 text-xs focus:border-amber-400 focus:ring-1 focus:ring-amber-400 focus:outline-none transition [&::-webkit-calendar-picker-indicator]:opacity-50 [&::-webkit-calendar-picker-indicator]:invert">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right Column: Type & Status -->
+              <div class="space-y-3">
+                <div>
+                  <label class="text-[11px] font-bold text-slate-300 flex items-center gap-1 mb-1.5">
+                    <i class="fa-solid fa-shapes text-amber-400"></i> Content Type:
+                  </label>
+                  <div class="grid grid-cols-2 gap-1.5" id="contentTypeButtonGroup">
+                    <button type="button" onclick="setModalContentType('Main Video')" data-type="Main Video" class="type-sel-btn active py-1.5 px-1 rounded-lg border border-amber-500/50 bg-amber-500/20 text-amber-300 font-bold flex items-center justify-center gap-1 text-[10px] transition"><i class="fa-solid fa-clapperboard"></i> Main</button>
+                    <button type="button" onclick="setModalContentType('Short / Reel')" data-type="Short / Reel" class="type-sel-btn py-1.5 px-1 rounded-lg border border-slate-700 bg-slate-800 text-slate-400 hover:text-slate-200 font-medium flex items-center justify-center gap-1 text-[10px] transition"><i class="fa-solid fa-film"></i> Short</button>
+                    <button type="button" onclick="setModalContentType('Static Post')" data-type="Static Post" class="type-sel-btn py-1.5 px-1 rounded-lg border border-slate-700 bg-slate-800 text-slate-400 hover:text-slate-200 font-medium flex items-center justify-center gap-1 text-[10px] transition"><i class="fa-solid fa-image"></i> Static</button>
+                    <button type="button" onclick="setModalContentType('Story')" data-type="Story" class="type-sel-btn py-1.5 px-1 rounded-lg border border-slate-700 bg-slate-800 text-slate-400 hover:text-slate-200 font-medium flex items-center justify-center gap-1 text-[10px] transition"><i class="fa-solid fa-circle-notch"></i> Story</button>
+                  </div>
+                </div>
+
+                <div>
+                  <label class="text-[11px] font-bold text-slate-300 flex items-center gap-1 mb-1.5">
+                    <i class="fa-solid fa-list-check text-emerald-400"></i> Status:
+                  </label>
+                  <div class="grid grid-cols-2 gap-1.5" id="modalStatusButtons">
+                    <button type="button" onclick="setModalStatus('Scheduled')" data-status="Scheduled" class="status-btn active py-1.5 px-1 rounded-lg border border-blue-500/50 bg-blue-500/20 text-blue-300 font-bold flex items-center justify-center gap-1 text-[10px] transition"><i class="fa-solid fa-calendar-check"></i> Scheduled</button>
+                    <button type="button" onclick="setModalStatus('In Progress')" data-status="In Progress" class="status-btn py-1.5 px-1 rounded-lg border border-slate-700 bg-slate-800 text-slate-400 hover:text-slate-200 font-medium flex items-center justify-center gap-1 text-[10px] transition"><i class="fa-solid fa-spinner"></i> In Progress</button>
+                    <button type="button" onclick="setModalStatus('Done')" data-status="Done" class="status-btn py-1.5 px-1 rounded-lg border border-slate-700 bg-slate-800 text-slate-400 hover:text-slate-200 font-medium flex items-center justify-center gap-1 text-[10px] transition"><i class="fa-solid fa-circle-check"></i> Done</button>
+                    <button type="button" onclick="setModalStatus('Draft')" data-status="Draft" class="status-btn py-1.5 px-1 rounded-lg border border-slate-700 bg-slate-800 text-slate-400 hover:text-slate-200 font-medium flex items-center justify-center gap-1 text-[10px] transition"><i class="fa-solid fa-pen-ruler"></i> Draft</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Platforms Row -->
+            <div class="mt-4 pt-3 border-t border-slate-800/60">
+              <label class="text-[11px] font-bold text-slate-300 flex items-center gap-1 mb-2">
+                <i class="fa-solid fa-share-nodes text-sky-400"></i> Target Platforms:
               </label>
-              <span id="autoScheduleBadge" class="text-[10px] font-semibold text-emerald-400 bg-emerald-950/50 px-1.5 py-0.2 rounded border border-emerald-800/40">
-                Wednesday • Day 5
-              </span>
-            </div>
-            <input type="date" id="postDateInput" onchange="handleModalDateChanged(this.value)" class="w-full bg-slate-900 text-slate-100 rounded-lg px-2.5 py-1.5 border border-slate-700 text-xs focus:border-amber-400 focus:outline-none">
-          </div>
-
-          <div>
-            <div class="flex items-center justify-between mb-1">
-              <label id="currentTimeLangLabel" class="text-[11px] font-bold text-slate-300 flex items-center gap-1">
-                <i class="fa-solid fa-clock text-amber-400"></i> Arabic Post Time (KSA):
-              </label>
-              <span class="text-[9px] text-slate-500">24-hr format</span>
-            </div>
-            <div class="relative">
-              <input type="text" id="postTimeInput" placeholder="18:00" onchange="handleModalTimeChanged(this.value)" class="w-full bg-slate-900 text-slate-100 rounded-lg pl-2.5 pr-8 py-1.5 border border-slate-700 text-xs focus:border-amber-400 focus:outline-none">
-              <i class="fa-regular fa-clock absolute right-2.5 top-2 text-slate-500 text-xs"></i>
+              <div class="flex flex-wrap gap-2" id="modalPlatformButtons">
+                <button type="button" onclick="toggleModalPlatform('YouTube')" data-platform="YouTube" class="plat-btn px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-900 text-slate-400 text-[11px] flex items-center gap-1.5 transition"><i class="fa-brands fa-youtube text-red-500"></i> YouTube</button>
+                <button type="button" onclick="toggleModalPlatform('TikTok')" data-platform="TikTok" class="plat-btn px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-900 text-slate-400 text-[11px] flex items-center gap-1.5 transition"><i class="fa-brands fa-tiktok text-slate-300"></i> TikTok</button>
+                <button type="button" onclick="toggleModalPlatform('Instagram')" data-platform="Instagram" class="plat-btn px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-900 text-slate-400 text-[11px] flex items-center gap-1.5 transition"><i class="fa-brands fa-instagram text-pink-400"></i> Instagram</button>
+                <button type="button" onclick="toggleModalPlatform('Facebook')" data-platform="Facebook" class="plat-btn px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-900 text-slate-400 text-[11px] flex items-center gap-1.5 transition"><i class="fa-brands fa-facebook text-blue-500"></i> Facebook</button>
+                <button type="button" onclick="toggleModalPlatform('X')" data-platform="X" class="plat-btn px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-900 text-slate-400 text-[11px] flex items-center gap-1.5 transition"><i class="fa-brands fa-x-twitter text-slate-300"></i> X</button>
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- 4. MANUAL PLATFORM SELECTION -->
-        <div class="space-y-1">
-          <label class="text-[11px] font-bold text-slate-300 flex items-center gap-1">
-            <i class="fa-solid fa-share-nodes text-sky-400"></i> Target Platforms:
-          </label>
-          <div class="grid grid-cols-5 gap-1.5" id="modalPlatformButtons">
-            <button type="button" onclick="toggleModalPlatform('YouTube')" data-platform="YouTube" class="plat-btn py-1.5 rounded-lg border border-slate-700 bg-slate-900/60 text-slate-400 text-xs flex items-center justify-center gap-1 transition">
-              <i class="fa-brands fa-youtube text-red-500"></i>
-              <span class="text-[11px]">YouTube</span>
-            </button>
-            <button type="button" onclick="toggleModalPlatform('TikTok')" data-platform="TikTok" class="plat-btn py-1.5 rounded-lg border border-slate-700 bg-slate-900/60 text-slate-400 text-xs flex items-center justify-center gap-1 transition">
-              <i class="fa-brands fa-tiktok text-slate-300"></i>
-              <span class="text-[11px]">TikTok</span>
-            </button>
-            <button type="button" onclick="toggleModalPlatform('Instagram')" data-platform="Instagram" class="plat-btn py-1.5 rounded-lg border border-slate-700 bg-slate-900/60 text-slate-400 text-xs flex items-center justify-center gap-1 transition">
-              <i class="fa-brands fa-instagram text-pink-400"></i>
-              <span class="text-[11px]">Instagram</span>
-            </button>
-            <button type="button" onclick="toggleModalPlatform('Facebook')" data-platform="Facebook" class="plat-btn py-1.5 rounded-lg border border-slate-700 bg-slate-900/60 text-slate-400 text-xs flex items-center justify-center gap-1 transition">
-              <i class="fa-brands fa-facebook text-blue-500"></i>
-              <span class="text-[11px]">Facebook</span>
-            </button>
-            <button type="button" onclick="toggleModalPlatform('X')" data-platform="X" class="plat-btn py-1.5 rounded-lg border border-slate-700 bg-slate-900/60 text-slate-400 text-xs flex items-center justify-center gap-1 transition">
-              <i class="fa-brands fa-x-twitter text-slate-300"></i>
-              <span class="text-[11px]">X</span>
-            </button>
-          </div>
-        </div>
+          <!-- CARD 2: CONTENT EDITOR -->
+          <div class="bg-slate-950/50 p-3 sm:p-4 rounded-xl border border-slate-800 shadow-inner flex flex-col gap-3">
+            <h4 class="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+              <i class="fa-solid fa-pen-nib"></i> Localized Content
+            </h4>
 
-        <!-- 5. STATUS SELECTOR BUTTONS -->
-        <div class="space-y-1">
-          <label class="text-[11px] font-bold text-slate-300 flex items-center gap-1">
-            <i class="fa-solid fa-list-check text-emerald-400"></i> Post Status:
-          </label>
-          <div class="grid grid-cols-4 gap-1.5" id="modalStatusButtons">
-            <button type="button" onclick="setModalStatus('Done')" data-status="Done" class="status-btn py-1.5 px-2 rounded-lg border border-slate-700 bg-slate-900/60 text-slate-300 text-xs font-medium flex items-center justify-center gap-1 transition">
-              <i class="fa-solid fa-circle-check text-emerald-400 text-[11px]"></i> Done
-            </button>
-            <button type="button" onclick="setModalStatus('Scheduled')" data-status="Scheduled" class="status-btn active py-1.5 px-2 rounded-lg border border-blue-500/50 bg-blue-500/20 text-blue-300 text-xs font-bold flex items-center justify-center gap-1 transition">
-              <i class="fa-solid fa-calendar-check text-blue-400 text-[11px]"></i> Scheduled
-            </button>
-            <button type="button" onclick="setModalStatus('In Progress')" data-status="In Progress" class="status-btn py-1.5 px-2 rounded-lg border border-slate-700 bg-slate-900/60 text-slate-300 text-xs font-medium flex items-center justify-center gap-1 transition">
-              <i class="fa-solid fa-spinner text-purple-400 text-[11px]"></i> In Progress
-            </button>
-            <button type="button" onclick="setModalStatus('Draft')" data-status="Draft" class="status-btn py-1.5 px-2 rounded-lg border border-slate-700 bg-slate-900/60 text-slate-300 text-xs font-medium flex items-center justify-center gap-1 transition">
-              <i class="fa-solid fa-pen-ruler text-slate-400 text-[11px]"></i> Draft
-            </button>
-          </div>
-        </div>
-
-        
-        <!-- ARABIC PANEL (Visible when activeModalLang === 'AR') -->
-        <div id="langPanel-AR" class="space-y-2.5 pt-1">
-          <div class="flex items-center justify-between pb-1 border-b border-slate-800">
-            <span class="text-xs font-bold text-amber-300 flex items-center gap-1.5">
-              <i class="fa-solid fa-file-lines"></i> المحتوى باللغة العربية (الرئيسي)
-            </span>
-            <span class="text-[10px] text-slate-500">Columns M, Q & Tags</span>
-          </div>
-
-          <div>
-            <div class="flex items-center justify-between mb-1">
-              <label class="text-[11px] font-bold text-slate-300">عنوان المنشور (Title):</label>
-              <button type="button" onclick="copyFormField('arTitleInput')" class="text-[10px] text-amber-400 hover:text-amber-300 flex items-center gap-1">
-                <i class="fa-solid fa-copy"></i> Copy Title
+            <!-- Language Tabs -->
+            <div class="bg-slate-900 p-1 rounded-lg border border-slate-800 flex items-center gap-1 shrink-0">
+              <button type="button" id="modalLangBtn-AR" onclick="setModalLanguageTab('AR')" class="flex-1 py-1.5 rounded-md text-[11px] font-bold transition flex items-center justify-center gap-1.5 bg-emerald-600/20 text-emerald-400 border border-emerald-500/30">
+                <i class="fa-solid fa-language"></i> <span class="font-arabic text-sm mt-0.5">العربية</span>
+              </button>
+              <button type="button" id="modalLangBtn-ENG" onclick="setModalLanguageTab('ENG')" class="flex-1 py-1.5 rounded-md text-[11px] font-semibold text-slate-400 hover:text-slate-200 transition flex items-center justify-center gap-1.5 border border-transparent">
+                <i class="fa-solid fa-globe"></i> ENG
+              </button>
+              <button type="button" id="modalLangBtn-HINDI" onclick="setModalLanguageTab('HINDI')" class="flex-1 py-1.5 rounded-md text-[11px] font-semibold text-slate-400 hover:text-slate-200 transition flex items-center justify-center gap-1.5 border border-transparent">
+                <i class="fa-solid fa-om"></i> <span class="font-hindi text-sm">हिंदी</span>
               </button>
             </div>
-            <input type="text" id="arTitleInput" placeholder="عنوان الفيديو التاريخي بالعربية..." dir="rtl" class="w-full bg-slate-900 text-slate-100 font-arabic rounded-lg px-2.5 py-1.5 border border-slate-700 text-xs focus:border-amber-400 focus:outline-none">
-          </div>
 
-          <div>
-            <div class="flex items-center justify-between mb-1">
-              <label class="text-[11px] font-bold text-slate-300">الوصف الكامل والمحتوى (Description / Caption):</label>
-              <button type="button" onclick="copyFormField('arDescInput')" class="text-[10px] text-amber-400 hover:text-amber-300 flex items-center gap-1">
-                <i class="fa-solid fa-copy"></i> Copy Description
-              </button>
-            </div>
-            <textarea id="arDescInput" rows="3" placeholder="اكتب نص المنشور الكامل هنا..." dir="rtl" class="w-full bg-slate-900 text-slate-100 font-arabic rounded-lg px-2.5 py-1.5 border border-slate-700 text-xs focus:border-amber-400 focus:outline-none"></textarea>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <div>
-              <div class="flex items-center justify-between mb-1">
-                <label class="text-[11px] font-bold text-slate-300">الهاشتاجات (Hashtags):</label>
-                <button type="button" onclick="copyFormField('arHashtagsInput')" class="text-[10px] text-amber-400 hover:text-amber-300 flex items-center gap-1">
-                  <i class="fa-solid fa-copy"></i> Copy
-                </button>
+            <!-- ARABIC PANEL -->
+            <div id="langPanel-AR" class="space-y-3 pt-1">
+              <div>
+                <div class="flex items-center justify-between mb-1.5">
+                  <label class="text-[11px] font-bold text-slate-300">عنوان المنشور (Title):</label>
+                  <button type="button" onclick="copyFormField('arTitleInput')" class="text-[10px] text-amber-400 hover:text-amber-300 flex items-center gap-1"><i class="fa-solid fa-copy"></i> Copy</button>
+                </div>
+                <input type="text" id="arTitleInput" placeholder="عنوان الفيديو التاريخي بالعربية..." dir="rtl" class="w-full bg-slate-900 text-slate-100 font-arabic rounded-lg px-3 py-2 border border-slate-700 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 focus:outline-none transition">
               </div>
-              <input type="text" id="arHashtagsInput" placeholder="#تاريخ_إسلامي #حضارة" dir="rtl" class="w-full bg-slate-900 text-slate-100 rounded-lg px-2.5 py-1.5 border border-slate-700 text-xs focus:border-amber-400 focus:outline-none">
-            </div>
 
-            <div>
-              <div class="flex items-center justify-between mb-1">
-                <label class="text-[11px] font-bold text-slate-300">الكلمات الدلالية (Keywords):</label>
-                <button type="button" onclick="copyFormField('arKeywordsInput')" class="text-[10px] text-amber-400 hover:text-amber-300 flex items-center gap-1">
-                  <i class="fa-solid fa-copy"></i> Copy
-                </button>
+              <div>
+                <div class="flex items-center justify-between mb-1.5">
+                  <label class="text-[11px] font-bold text-slate-300">الوصف الكامل (Description):</label>
+                  <button type="button" onclick="copyFormField('arDescInput')" class="text-[10px] text-amber-400 hover:text-amber-300 flex items-center gap-1"><i class="fa-solid fa-copy"></i> Copy</button>
+                </div>
+                <textarea id="arDescInput" rows="4" placeholder="اكتب نص المنشور الكامل هنا..." dir="rtl" class="w-full bg-slate-900 text-slate-100 font-arabic rounded-lg px-3 py-2 border border-slate-700 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 focus:outline-none transition leading-relaxed"></textarea>
               </div>
-              <input type="text" id="arKeywordsInput" placeholder="تاريخ, علماء, بغداد" dir="rtl" class="w-full bg-slate-900 text-slate-100 rounded-lg px-2.5 py-1.5 border border-slate-700 text-xs focus:border-amber-400 focus:outline-none">
-            </div>
-          </div>
-        </div>
 
-        <!-- ENGLISH PANEL (Visible when activeModalLang === 'ENG') -->
-        <div id="langPanel-ENG" class="space-y-2.5 pt-1 hidden">
-          <div class="flex items-center justify-between pb-1 border-b border-slate-800">
-            <span class="text-xs font-bold text-sky-400 flex items-center gap-1.5">
-              <i class="fa-solid fa-file-lines"></i> English Content Details
-            </span>
-            <span class="text-[10px] text-slate-500">Columns L, R & Tags</span>
-          </div>
-
-          <div>
-            <div class="flex items-center justify-between mb-1">
-              <label class="text-[11px] font-bold text-slate-300">Post Title / Working Title:</label>
-              <button type="button" onclick="copyFormField('engTitleInput')" class="text-[10px] text-sky-400 hover:text-sky-300 flex items-center gap-1">
-                <i class="fa-solid fa-copy"></i> Copy Title
-              </button>
-            </div>
-            <input type="text" id="engTitleInput" placeholder="English video title / working title..." class="w-full bg-slate-900 text-slate-100 rounded-lg px-2.5 py-1.5 border border-slate-700 text-xs focus:border-sky-400 focus:outline-none">
-          </div>
-
-          <div>
-            <div class="flex items-center justify-between mb-1">
-              <label class="text-[11px] font-bold text-slate-300">Description / Caption:</label>
-              <button type="button" onclick="copyFormField('engDescInput')" class="text-[10px] text-sky-400 hover:text-sky-300 flex items-center gap-1">
-                <i class="fa-solid fa-copy"></i> Copy Description
-              </button>
-            </div>
-            <textarea id="engDescInput" rows="3" placeholder="Full English post caption and story summary..." class="w-full bg-slate-900 text-slate-100 rounded-lg px-2.5 py-1.5 border border-slate-700 text-xs focus:border-sky-400 focus:outline-none"></textarea>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <div>
-              <div class="flex items-center justify-between mb-1">
-                <label class="text-[11px] font-bold text-slate-300">Hashtags:</label>
-                <button type="button" onclick="copyFormField('engHashtagsInput')" class="text-[10px] text-sky-400 hover:text-sky-300 flex items-center gap-1">
-                  <i class="fa-solid fa-copy"></i> Copy
-                </button>
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="text-[10px] font-bold text-slate-400 mb-1 block">الهاشتاجات (Hashtags):</label>
+                  <input type="text" id="arHashtagsInput" placeholder="#تاريخ_إسلامي" dir="rtl" class="w-full bg-slate-900 text-slate-300 rounded-md px-2.5 py-1.5 border border-slate-800 text-xs focus:border-amber-400 focus:outline-none transition">
+                </div>
+                <div>
+                  <label class="text-[10px] font-bold text-slate-400 mb-1 block">الكلمات الدلالية (Keywords):</label>
+                  <input type="text" id="arKeywordsInput" placeholder="تاريخ, علماء" dir="rtl" class="w-full bg-slate-900 text-slate-300 rounded-md px-2.5 py-1.5 border border-slate-800 text-xs focus:border-amber-400 focus:outline-none transition">
+                </div>
               </div>
-              <input type="text" id="engHashtagsInput" placeholder="#IslamicHistory #Documentary" class="w-full bg-slate-900 text-slate-100 rounded-lg px-2.5 py-1.5 border border-slate-700 text-xs focus:border-sky-400 focus:outline-none">
             </div>
 
-            <div>
-              <div class="flex items-center justify-between mb-1">
-                <label class="text-[11px] font-bold text-slate-300">Keywords:</label>
-                <button type="button" onclick="copyFormField('engKeywordsInput')" class="text-[10px] text-sky-400 hover:text-sky-300 flex items-center gap-1">
-                  <i class="fa-solid fa-copy"></i> Copy
-                </button>
+            <!-- ENGLISH PANEL -->
+            <div id="langPanel-ENG" class="space-y-3 pt-1 hidden">
+              <div>
+                <div class="flex items-center justify-between mb-1.5">
+                  <label class="text-[11px] font-bold text-slate-300">Post Title:</label>
+                  <button type="button" onclick="copyFormField('engTitleInput')" class="text-[10px] text-sky-400 hover:text-sky-300 flex items-center gap-1"><i class="fa-solid fa-copy"></i> Copy</button>
+                </div>
+                <input type="text" id="engTitleInput" placeholder="English video title..." class="w-full bg-slate-900 text-slate-100 rounded-lg px-3 py-2 border border-slate-700 text-sm focus:border-sky-400 focus:ring-1 focus:ring-sky-400 focus:outline-none transition">
               </div>
-              <input type="text" id="engKeywordsInput" placeholder="Islamic history, Baghdad, science" class="w-full bg-slate-900 text-slate-100 rounded-lg px-2.5 py-1.5 border border-slate-700 text-xs focus:border-sky-400 focus:outline-none">
-            </div>
-          </div>
-        </div>
 
-        <!-- HINDI PANEL (Visible when activeModalLang === 'HINDI') -->
-        <div id="langPanel-HINDI" class="space-y-2.5 pt-1 hidden">
-          <div class="flex items-center justify-between pb-1 border-b border-slate-800">
-            <span class="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
-              <i class="fa-solid fa-file-lines"></i> हिन्दी सामग्री विवरण (Hindi Content)
-            </span>
-            <span class="text-[10px] text-slate-500">Column S & Tags</span>
-          </div>
-
-          <div>
-            <div class="flex items-center justify-between mb-1">
-              <label class="text-[11px] font-bold text-slate-300">शीर्षक (Title):</label>
-              <button type="button" onclick="copyFormField('hindiTitleInput')" class="text-[10px] text-emerald-400 hover:text-emerald-300 flex items-center gap-1">
-                <i class="fa-solid fa-copy"></i> Copy Title
-              </button>
-            </div>
-            <input type="text" id="hindiTitleInput" placeholder="हिन्दी में वीडियो का शीर्षक..." class="w-full bg-slate-900 text-slate-100 font-hindi rounded-lg px-2.5 py-1.5 border border-slate-700 text-xs focus:border-emerald-400 focus:outline-none">
-          </div>
-
-          <div>
-            <div class="flex items-center justify-between mb-1">
-              <label class="text-[11px] font-bold text-slate-300">विवरण और कैप्शन (Description / Caption):</label>
-              <button type="button" onclick="copyFormField('hindiDescInput')" class="text-[10px] text-emerald-400 hover:text-emerald-300 flex items-center gap-1">
-                <i class="fa-solid fa-copy"></i> Copy Description
-              </button>
-            </div>
-            <textarea id="hindiDescInput" rows="3" placeholder="यहाँ पूरा हिन्दी कैप्शन लिखें..." class="w-full bg-slate-900 text-slate-100 font-hindi rounded-lg px-2.5 py-1.5 border border-slate-700 text-xs focus:border-emerald-400 focus:outline-none"></textarea>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <div>
-              <div class="flex items-center justify-between mb-1">
-                <label class="text-[11px] font-bold text-slate-300">हैशटैग (Hashtags):</label>
-                <button type="button" onclick="copyFormField('hindiHashtagsInput')" class="text-[10px] text-emerald-400 hover:text-emerald-300 flex items-center gap-1">
-                  <i class="fa-solid fa-copy"></i> Copy
-                </button>
+              <div>
+                <div class="flex items-center justify-between mb-1.5">
+                  <label class="text-[11px] font-bold text-slate-300">Description / Caption:</label>
+                  <button type="button" onclick="copyFormField('engDescInput')" class="text-[10px] text-sky-400 hover:text-sky-300 flex items-center gap-1"><i class="fa-solid fa-copy"></i> Copy</button>
+                </div>
+                <textarea id="engDescInput" rows="4" placeholder="Full English post caption..." class="w-full bg-slate-900 text-slate-100 rounded-lg px-3 py-2 border border-slate-700 text-sm focus:border-sky-400 focus:ring-1 focus:ring-sky-400 focus:outline-none transition leading-relaxed"></textarea>
               </div>
-              <input type="text" id="hindiHashtagsInput" placeholder="#इस्लामीइतिहास #इतिहास" class="w-full bg-slate-900 text-slate-100 rounded-lg px-2.5 py-1.5 border border-slate-700 text-xs focus:border-emerald-400 focus:outline-none">
+
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="text-[10px] font-bold text-slate-400 mb-1 block">Hashtags:</label>
+                  <input type="text" id="engHashtagsInput" placeholder="#IslamicHistory" class="w-full bg-slate-900 text-slate-300 rounded-md px-2.5 py-1.5 border border-slate-800 text-xs focus:border-sky-400 focus:outline-none transition">
+                </div>
+                <div>
+                  <label class="text-[10px] font-bold text-slate-400 mb-1 block">Keywords:</label>
+                  <input type="text" id="engKeywordsInput" placeholder="History, science" class="w-full bg-slate-900 text-slate-300 rounded-md px-2.5 py-1.5 border border-slate-800 text-xs focus:border-sky-400 focus:outline-none transition">
+                </div>
+              </div>
             </div>
 
-            <div>
-              <div class="flex items-center justify-between mb-1">
-                <label class="text-[11px] font-bold text-slate-300">कीवर्ड (Keywords):</label>
-                <button type="button" onclick="copyFormField('hindiKeywordsInput')" class="text-[10px] text-emerald-400 hover:text-emerald-300 flex items-center gap-1">
-                  <i class="fa-solid fa-copy"></i> Copy
-                </button>
+            <!-- HINDI PANEL -->
+            <div id="langPanel-HINDI" class="space-y-3 pt-1 hidden">
+              <div>
+                <div class="flex items-center justify-between mb-1.5">
+                  <label class="text-[11px] font-bold text-slate-300">शीर्षक (Title):</label>
+                  <button type="button" onclick="copyFormField('hindiTitleInput')" class="text-[10px] text-emerald-400 hover:text-emerald-300 flex items-center gap-1"><i class="fa-solid fa-copy"></i> Copy</button>
+                </div>
+                <input type="text" id="hindiTitleInput" placeholder="हिन्दी में वीडियो का शीर्षक..." class="w-full bg-slate-900 text-slate-100 font-hindi rounded-lg px-3 py-2 border border-slate-700 text-sm focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 focus:outline-none transition">
               </div>
-              <input type="text" id="hindiKeywordsInput" placeholder="इस्लामी इतिहास, स्वर्ण युग" class="w-full bg-slate-900 text-slate-100 rounded-lg px-2.5 py-1.5 border border-slate-700 text-xs focus:border-emerald-400 focus:outline-none">
+
+              <div>
+                <div class="flex items-center justify-between mb-1.5">
+                  <label class="text-[11px] font-bold text-slate-300">विवरण और कैप्शन (Description):</label>
+                  <button type="button" onclick="copyFormField('hindiDescInput')" class="text-[10px] text-emerald-400 hover:text-emerald-300 flex items-center gap-1"><i class="fa-solid fa-copy"></i> Copy</button>
+                </div>
+                <textarea id="hindiDescInput" rows="4" placeholder="यहाँ पूरा हिन्दी कैप्शन लिखें..." class="w-full bg-slate-900 text-slate-100 font-hindi rounded-lg px-3 py-2 border border-slate-700 text-sm focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 focus:outline-none transition leading-relaxed"></textarea>
+              </div>
+
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="text-[10px] font-bold text-slate-400 mb-1 block">हैशटैग (Hashtags):</label>
+                  <input type="text" id="hindiHashtagsInput" placeholder="#इस्लामीइतिहास" class="w-full bg-slate-900 text-slate-300 rounded-md px-2.5 py-1.5 border border-slate-800 text-xs focus:border-emerald-400 focus:outline-none transition">
+                </div>
+                <div>
+                  <label class="text-[10px] font-bold text-slate-400 mb-1 block">कीवर्ड (Keywords):</label>
+                  <input type="text" id="hindiKeywordsInput" placeholder="इतिहास" class="w-full bg-slate-900 text-slate-300 rounded-md px-2.5 py-1.5 border border-slate-800 text-xs focus:border-emerald-400 focus:outline-none transition">
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -962,10 +870,12 @@
         if (!btn || !panel) return;
 
         if (l === lang) {
-          btn.className = 'flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 bg-emerald-600 text-white shadow-sm';
+          if(l === 'AR') btn.className = 'flex-1 py-1.5 rounded-md text-[11px] font-bold transition flex items-center justify-center gap-1.5 bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 shadow-sm';
+          if(l === 'ENG') btn.className = 'flex-1 py-1.5 rounded-md text-[11px] font-bold transition flex items-center justify-center gap-1.5 bg-sky-600/20 text-sky-400 border border-sky-500/30 shadow-sm';
+          if(l === 'HINDI') btn.className = 'flex-1 py-1.5 rounded-md text-[11px] font-bold transition flex items-center justify-center gap-1.5 bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 shadow-sm';
           panel.classList.remove('hidden');
         } else {
-          btn.className = 'flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 transition flex items-center justify-center gap-1.5';
+          btn.className = 'flex-1 py-1.5 rounded-md text-[11px] font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition flex items-center justify-center gap-1.5 border border-transparent';
           panel.classList.add('hidden');
         }
       });
@@ -974,13 +884,13 @@
       const timeLabel = document.getElementById('currentTimeLangLabel');
 
       if (lang === 'AR') {
-        if (timeLabel) timeLabel.innerHTML = '<i class="fa-solid fa-clock text-amber-400"></i> Arabic Post Time (KSA):';
+        if (timeLabel) timeLabel.innerHTML = '<i class="fa-solid fa-clock text-amber-400"></i> Time (KSA):';
         if (timeInput) timeInput.value = safeGetVal('postArabicTime') || '18:00';
       } else if (lang === 'ENG') {
-        if (timeLabel) timeLabel.innerHTML = '<i class="fa-solid fa-clock text-sky-400"></i> English Post Time (KSA):';
+        if (timeLabel) timeLabel.innerHTML = '<i class="fa-solid fa-clock text-sky-400"></i> Time (KSA):';
         if (timeInput) timeInput.value = safeGetVal('postEnglishTime') || '18:30';
       } else if (lang === 'HINDI') {
-        if (timeLabel) timeLabel.innerHTML = '<i class="fa-solid fa-clock text-emerald-400"></i> Hindi Post Time (KSA):';
+        if (timeLabel) timeLabel.innerHTML = '<i class="fa-solid fa-clock text-emerald-400"></i> Time (KSA):';
         if (timeInput) timeInput.value = safeGetVal('postHindiTime') || '19:00';
       }
     }
@@ -995,9 +905,9 @@
 
       document.querySelectorAll('#contentTypeButtonGroup .type-sel-btn').forEach(btn => {
         if (btn.getAttribute('data-type') === type) {
-          btn.className = 'type-sel-btn active py-2 px-2 rounded-xl border border-amber-500/50 bg-amber-500/20 text-amber-300 font-bold flex items-center justify-center gap-1 text-[11px] transition';
+          btn.className = 'type-sel-btn active py-1.5 px-1 rounded-lg border border-amber-500/50 bg-amber-500/20 text-amber-300 font-bold flex items-center justify-center gap-1 text-[10px] transition';
         } else {
-          btn.className = 'type-sel-btn py-2 px-2 rounded-xl border border-slate-700 bg-slate-800 text-slate-300 font-medium hover:bg-slate-700 flex items-center justify-center gap-1 text-[11px] transition';
+          btn.className = 'type-sel-btn py-1.5 px-1 rounded-lg border border-slate-700 bg-slate-800 text-slate-400 hover:text-slate-200 font-medium flex items-center justify-center gap-1 text-[10px] transition';
         }
       });
 
@@ -1013,9 +923,9 @@
 
       document.querySelectorAll('#modalStatusButtons .status-btn').forEach(btn => {
         if (btn.getAttribute('data-status') === status) {
-          btn.className = 'status-btn active py-1.5 px-2 rounded-lg border border-blue-500/50 bg-blue-500/20 text-blue-300 text-xs font-bold flex items-center justify-center gap-1 transition';
+          btn.className = 'status-btn active py-1.5 px-1 rounded-lg border border-blue-500/50 bg-blue-500/20 text-blue-300 font-bold flex items-center justify-center gap-1 text-[10px] transition';
         } else {
-          btn.className = 'status-btn py-1.5 px-2 rounded-lg border border-slate-700 bg-slate-900/60 text-slate-300 hover:border-slate-500 text-xs font-medium flex items-center justify-center gap-1 transition';
+          btn.className = 'status-btn py-1.5 px-1 rounded-lg border border-slate-700 bg-slate-800 text-slate-400 hover:text-slate-200 font-medium flex items-center justify-center gap-1 text-[10px] transition';
         }
       });
     }
@@ -1039,10 +949,10 @@
         const plat = btn.getAttribute('data-platform');
         if (modalSelectedPlatforms.includes(plat)) {
           btn.classList.add('border-amber-500/50', 'bg-amber-500/20', 'text-amber-200');
-          btn.classList.remove('border-slate-700', 'bg-slate-900/60', 'text-slate-400');
+          btn.classList.remove('border-slate-700', 'bg-slate-900', 'text-slate-400');
         } else {
           btn.classList.remove('border-amber-500/50', 'bg-amber-500/20', 'text-amber-200');
-          btn.classList.add('border-slate-700', 'bg-slate-900/60', 'text-slate-400');
+          btn.classList.add('border-slate-700', 'bg-slate-900', 'text-slate-400');
         }
       });
     }

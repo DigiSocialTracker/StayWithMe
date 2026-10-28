@@ -825,17 +825,12 @@
               <i class="fa-solid fa-link"></i> Post-Publishing & Notes
             </h4>
             
-            <!-- Published URL -->
+            <!-- Published URLs (Multi-line) -->
             <div>
-              <label class="text-[11px] font-bold text-slate-300 mb-1.5 flex items-center gap-1">
-                Published Video URL:
+              <label class="text-[11px] font-bold text-slate-300 mb-1.5 flex items-center justify-between">
+                <span>Published URLs (YouTube, Insta, X, etc.):</span>
               </label>
-              <div class="flex items-center gap-2">
-                <input type="url" id="postPublishedUrl" placeholder="https://youtube.com/..." class="w-full bg-slate-900 text-slate-100 rounded-lg px-3 py-1.5 border border-slate-700 text-xs focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 focus:outline-none transition">
-                <button type="button" onclick="const url=document.getElementById('postPublishedUrl').value; if(url) window.open(url, '_blank'); else showToast('No URL entered', 'warning');" class="px-3 py-1.5 bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/30 text-emerald-400 rounded-lg text-xs font-bold transition flex items-center gap-1 shrink-0">
-                  <i class="fa-solid fa-play"></i> Play
-                </button>
-              </div>
+              <textarea id="postPublishedUrl" rows="2" placeholder="Paste multiple links here...&#10;e.g. YT: https://...&#10;IG: https://..." class="w-full bg-slate-900 text-slate-100 rounded-lg px-3 py-2 border border-slate-700 text-xs focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 focus:outline-none transition leading-relaxed"></textarea>
             </div>
 
             <!-- Auto-Tagging Team Notes -->
@@ -843,15 +838,20 @@
               <label class="text-[11px] font-bold text-slate-300 mb-1.5 flex items-center justify-between">
                 <span>Team Notes & History:</span>
               </label>
-              <textarea id="postTeamNotesHistory" rows="3" readonly placeholder="No notes yet..." class="w-full bg-slate-900/60 text-slate-400 rounded-lg px-3 py-2 border border-slate-800 text-xs mb-2 leading-relaxed focus:outline-none custom-scrollbar"></textarea>
+              <!-- History box is readonly to protect the log -->
+              <textarea id="postTeamNotesHistory" rows="3" readonly placeholder="No notes yet..." class="w-full bg-slate-900/60 text-slate-400 rounded-lg px-3 py-2 border border-slate-800 text-xs mb-2 leading-relaxed focus:outline-none"></textarea>
               
-              <div class="flex flex-col gap-1">
-                <span class="text-[9px] text-slate-500">Your name will be auto-tagged when adding a new note.</span>
-                <input type="text" id="newTeamNote" placeholder="Type a new comment/note here..." class="w-full bg-slate-900 text-slate-100 rounded-lg px-3 py-1.5 border border-slate-700 text-xs focus:border-sky-400 focus:ring-1 focus:ring-sky-400 focus:outline-none transition">
+              <div class="flex flex-col gap-1.5">
+                <span class="text-[9px] text-slate-500">Your name will be auto-tagged. Type below and click Add or Save.</span>
+                <div class="flex items-center gap-2">
+                  <input type="text" id="newTeamNote" placeholder="Type a new comment/note here..." class="w-full bg-slate-900 text-slate-100 rounded-lg px-3 py-1.5 border border-slate-700 text-xs focus:border-sky-400 focus:ring-1 focus:ring-sky-400 focus:outline-none transition">
+                  <button type="button" onclick="appendTeamNote()" class="px-3 py-1.5 bg-sky-600/20 hover:bg-sky-600/30 border border-sky-500/30 text-sky-400 rounded-lg text-xs font-bold transition shrink-0">
+                    Add Note
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-
 
         <!-- Modal Action Footer -->
         <div class="pt-3 border-t border-slate-800 flex items-center justify-between shrink-0">
@@ -1292,6 +1292,33 @@ const now = new Date();
       modal.classList.remove('hidden');
     }
 
+
+function appendTeamNote() {
+      const newNoteInput = document.getElementById('newTeamNote');
+      const historyBox = document.getElementById('postTeamNotesHistory');
+      const newNoteVal = newNoteInput.value.trim();
+
+      if (!newNoteVal) {
+        showToast('Please type a note first', 'warning');
+        return;
+      }
+
+      // Extract username from Supabase email (e.g., "riyas.moosa" from "riyas.moosa@gmail.com")
+      const userName = currentUser?.user_metadata?.full_name || currentUser?.email?.split('@')[0] || 'Team Member';
+      const dateStr = new Date().toLocaleDateString('en-US', {month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit'});
+      
+      const formattedNote = `[${userName} - ${dateStr}]: ${newNoteVal}`;
+      
+      if (historyBox.value) {
+        historyBox.value = historyBox.value + '\n\n' + formattedNote;
+      } else {
+        historyBox.value = formattedNote;
+      }
+
+      newNoteInput.value = ''; // Clear the input field
+      historyBox.scrollTop = historyBox.scrollHeight; // Auto-scroll to the newest note
+    }
+
     function closeEditModal() {
       const modal = document.getElementById('editModal');
       if (modal) modal.classList.add('hidden');
@@ -1340,9 +1367,14 @@ const now = new Date();
       const captionAr = descAr ? `${descAr}\n\n${hashtagsAr}` : hashtagsAr;
       const captionEn = descEn ? `${descEn}\n\n${hashtagsEn}` : hashtagsEn;
       const captionHi = descHi ? `${descHi}\n\n${hashtagsHi}` : hashtagsHi;
-const publishedUrlVal = safeGetVal('postPublishedUrl');
-      let currentNotes = safeGetVal('postTeamNotesHistory');
-      const newNoteVal = safeGetVal('newTeamNote');
+
+      // Auto-tag any unsaved text left in the input box before saving
+      if (safeGetVal('newTeamNote')) {
+        appendTeamNote();
+      }
+      
+      const publishedUrlVal = safeGetVal('postPublishedUrl');
+      const currentNotes = safeGetVal('postTeamNotesHistory');
 
       // Auto-tag logic: Append new note with user's name if they typed something
       if (newNoteVal) {
@@ -2770,8 +2802,12 @@ async function seedDefaultDataToSupabase() {
 }
 
 // Realtime Channel: Listen for updates made by teammates
+let realtimeChannel = null;
+
 function listenForRealtimeChanges() {
-  sb.channel('realtime_calendar')
+  if (realtimeChannel) return; // Prevent duplicate subscriptions causing console errors
+  
+  realtimeChannel = sb.channel('realtime_calendar')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'calendar_posts' }, () => {
       syncDataFromSupabase();
     })

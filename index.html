@@ -1117,6 +1117,18 @@ const now = new Date();
       }
 
       setModalLanguageTab('AR');
+
+      // Set date limits: Up to 6 months in the future
+      const dateInputEl = document.getElementById('postDateInput');
+      if (dateInputEl) {
+        const limitMax = new Date();
+        limitMax.setMonth(limitMax.getMonth() + 6);
+        dateInputEl.setAttribute('max', formatDateStr(limitMax));
+        
+        // Optional: Prevent picking past dates by uncommenting the line below
+        // dateInputEl.setAttribute('min', formatDateStr(new Date()));
+      }
+
       modal.classList.remove('hidden');
     }
 
@@ -1132,6 +1144,16 @@ const now = new Date();
       const dateVal = safeGetVal('postDateInput');
       if (!dateVal) {
         showToast('Please select a valid date', 'error');
+        return;
+      }
+
+      // Set date limits: Up to 6 months in the future
+      const selectedDateObj = new Date(dateVal);
+      const limitMaxDate = new Date();
+      limitMaxDate.setMonth(limitMaxDate.getMonth() + 6);
+      
+      if (selectedDateObj > limitMaxDate) {
+        showToast('Guideline: Posts can only be scheduled up to 6 months in advance', 'warning');
         return;
       }
 

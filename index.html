@@ -1258,8 +1258,8 @@ const now = new Date();
       }
 
       // Active days of current month
-      const todayDateObj = new Date(year, month, sliderActiveDay);
-      const todayDateStr = formatDateStr(todayDateObj);
+      const realToday = new Date();
+      const todayDateStr = formatDateStr(realToday);
 
       for (let day = 1; day <= daysInMonth; day++) {
         const currentDate = new Date(year, month, day);
@@ -1431,11 +1431,15 @@ const now = new Date();
           </div>
       `;
 
+      const realToday = new Date();
+      const realTodayStr = formatDateStr(realToday);
+
       displayDays.forEach(d => {
         const dateObj = new Date(year, month, d);
+        const dateStr = formatDateStr(dateObj);
         const isWed = (dateObj.getDay() + 1) % 7 === 4;
         const isFri = (dateObj.getDay() + 1) % 7 === 6;
-        const isToday = d === sliderActiveDay;
+        const isToday = dateStr === realTodayStr;
 
         html += `
           <div class="text-center p-1 border-b border-r border-slate-800 text-[10px] font-semibold ${isToday ? 'bg-rose-950/60 text-rose-300 font-bold' : isWed ? 'bg-amber-950/40 text-amber-300' : isFri ? 'bg-rose-950/30 text-rose-300' : 'text-slate-400'}">
@@ -1472,10 +1476,12 @@ const now = new Date();
           `;
 
           displayDays.forEach(d => {
+            const dateObj = new Date(year, month, d);
+            const dateStr = formatDateStr(dateObj);
             const isMatch = inCurrentMonth && postDay === d;
-            const isWed = (new Date(year, month, d).getDay() + 1) % 7 === 4;
-            const isFri = (new Date(year, month, d).getDay() + 1) % 7 === 6;
-            const isToday = d === sliderActiveDay;
+            const isWed = (dateObj.getDay() + 1) % 7 === 4;
+            const isFri = (dateObj.getDay() + 1) % 7 === 6;
+            const isToday = dateStr === realTodayStr;
 
             let cellBg = isToday ? 'bg-rose-950/20 ' : isWed ? 'bg-amber-950/20 ' : isFri ? 'bg-rose-950/15 ' : '';
 
@@ -1497,8 +1503,8 @@ const now = new Date();
       }
 
       // Render Vertical Today Indicator Line across the Gantt matrix
-      if (displayDays.includes(sliderActiveDay)) {
-        const activeIndex = displayDays.indexOf(sliderActiveDay);
+      if (year === realToday.getFullYear() && month === realToday.getMonth() && displayDays.includes(realToday.getDate())) {
+        const activeIndex = displayDays.indexOf(realToday.getDate());
         const colWidthPercent = 100 / totalCols;
         const leftPercent = (180 / (container.offsetWidth || 650) * 100) + (activeIndex * (100 - (180 / (container.offsetWidth || 650) * 100)) / totalCols);
 
@@ -2478,15 +2484,6 @@ async function syncDataFromSupabase() {
       status: row.status || 'Scheduled'
     }));
 
-// ---> ADD THIS NEW BLOCK <---
-    // Automatically jump calendar to the month/year of the earliest database post
-    if (postsData.length > 0) {
-      const sortedByDate = [...postsData].sort((a,b) => new Date(a.date) - new Date(b.date));
-      const firstDate = new Date(sortedByDate[0].date);
-      currentViewingDate = new Date(firstDate.getFullYear(), firstDate.getMonth(), 1);
-      sliderActiveDay = firstDate.getDate();
-    }
-    // ---> END NEW BLOCK <---
 
     renderAllViews();
   } catch (err) {

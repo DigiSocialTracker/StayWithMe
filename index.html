@@ -78,15 +78,99 @@
       border-color: #f59e0b;
       box-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
     }
+
+/* ---------- Loading Screen Styles ---------- */
+    :root {
+      --brand-orange: #f47422;
+      --white: #fff;
+      --load-time: 3s;
+    }
+
+    #app-loader {
+      position: fixed;
+      inset: 0;
+      background: var(--brand-orange);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 46px;
+      z-index: 99999;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+    }
+
+    #app-loader.hide {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .loader-logo-container {
+      width: 140px; 
+      height: 140px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transform: translateY(40px) rotate(-10deg) scale(.92);
+    }
+    
+    .loader-logo-container.animate-in {
+      animation: floatIn 1.2s cubic-bezier(.22, 1, .36, 1) forwards;
+    }
+
+    .loader-logo-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      drop-shadow: 0 10px 15px rgba(0,0,0,0.2);
+    }
+
+    @keyframes floatIn {
+      0%   { opacity: 0; transform: translateY(40px) rotate(-10deg) scale(.92); }
+      60%  { opacity: 1; }
+      100% { opacity: 1; transform: translateY(0) rotate(0deg) scale(1); }
+    }
+
+    .loader-bar {
+      width: 120px;
+      height: 5px;
+      background: rgba(0, 0, 0, 0.15);
+      border-radius: 999px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .loader-bar span {
+      position: absolute;
+      inset: 0;
+      background: var(--white);
+      border-radius: inherit;
+      transform-origin: left center;
+      transform: scaleX(0);
+    }
+    
+    .loader-bar span.animate-fill {
+      animation: fillBar var(--load-time) linear forwards;
+    }
+
+    @keyframes fillBar {
+      to { transform: scaleX(1); }
+    }
   </style>
 </head>
 <body class="h-screen flex flex-col overflow-hidden bg-slate-950 text-slate-100">
+<!-- Initial Loading Screen -->
+<div id="app-loader">
+  <div class="loader-logo-container" id="loaderLogoBox">
+    <img src="DigiSocialTracker/StayWithMe/Logo/Stay-With-me-Logo.png" id="loaderLogoImg" alt="Stay With Me Logo">
+  </div>
+  <div class="loader-bar"><span id="loaderBarSpan"></span></div>
+</div>
 
 <!-- Google Login Overlay -->
 <div id="authOverlay" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 backdrop-blur-md transition-opacity duration-300">
-  <div class="w-full max-w-md p-8 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl text-center">
-    <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-tr from-amber-500 to-rose-500 flex items-center justify-center text-white text-2xl shadow-lg shadow-amber-500/20">
-      <i class="fa-solid fa-calendar-days"></i>
+  <div class="w-24 h-24 mx-auto mb-4 flex items-center justify-center">
+      <img src="DigiSocialTracker/StayWithMe/Logo/Stay-With-me-Logo.png" alt="Stay With Me Logo" class="w-full h-full object-contain drop-shadow-xl">
     </div>
     <h2 class="text-2xl font-bold text-slate-100 tracking-tight">Stay With Me</h2>
     <p class="text-sm text-slate-400 mt-1 mb-6">Social Media Video Content Management</p>
@@ -117,8 +201,8 @@
   <!-- Top App Bar -->
   <header class="bg-slate-900 border-b border-slate-800 px-4 py-2 shrink-0 flex flex-wrap items-center justify-between gap-3 shadow-md z-20">
     <div class="flex items-center space-x-3">
-      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 via-teal-500 to-amber-400 flex items-center justify-center shadow-lg shadow-emerald-950/60 text-slate-950 text-xl font-bold">
-        <i class="fa-solid fa-moon"></i>
+      <div class="w-10 h-10 flex items-center justify-center rounded-lg bg-slate-800 p-1 border border-slate-700 shadow-lg">
+        <img src="DigiSocialTracker/StayWithMe/Logo/Stay-With-me-Logo.png" alt="App Logo" class="w-full h-full object-contain">
       </div>
       <div>
         <div class="flex items-center gap-2">
@@ -2613,12 +2697,40 @@ function listenForRealtimeChanges() {
 }
     // Launch application upon page load
     window.addEventListener('DOMContentLoaded', () => {
+      // 1. Setup Loader Logic
+      const loaderImg = document.getElementById('loaderLogoImg');
+      const loaderLogoBox = document.getElementById('loaderLogoBox');
+      const loaderBarSpan = document.getElementById('loaderBarSpan');
+      const appLoader = document.getElementById('app-loader');
+
+      function startLoaderAnimation() {
+        // Start floating logo and loading bar
+        loaderLogoBox.classList.add('animate-in');
+        loaderBarSpan.classList.add('animate-fill');
+        
+        // Hide loader after 3 seconds
+        setTimeout(() => {
+          appLoader.classList.add('hide');
+          setTimeout(() => appLoader.remove(), 500); // Remove from DOM after fade
+        }, 3000);
+      }
+
+      // Wait for the browser to finish downloading the image before animating
+      if (loaderImg.complete) {
+        startLoaderAnimation();
+      } else {
+        loaderImg.addEventListener('load', startLoaderAnimation);
+        loaderImg.addEventListener('error', startLoaderAnimation); // Fallback if image path is broken
+      }
+
+      // 2. Initialize App Core Systems
       loadInitialData();
       renderAllViews();
       updateRiyadhClock();
       setInterval(updateRiyadhClock, 1000);
       
       // 🚀 Start Supabase authentication and cloud data sync
+      // (The loader overlays this, hiding the auth blink from the user!)
       initAuthAndData();
     });
   </script>

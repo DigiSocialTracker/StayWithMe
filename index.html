@@ -78,6 +78,14 @@
       border-color: #f59e0b;
       box-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
     }
+/* Utility to hide scrollbars within specific scrollable containers */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;  /* IE and Edge */
+      scrollbar-width: none;  /* Firefox */
+    }
 
 /* ---------- Loading Screen Styles ---------- */
     :root {
@@ -1427,8 +1435,9 @@ const now = new Date();
           </div>
         `;
 
-        // Posts List inside cell
-        let postsHtml = '<div class="space-y-1.5 overflow-hidden flex-1 flex flex-col justify-start">';
+        // Posts List inside cell (Added overflow-y-auto, no-scrollbar, and min-h-0)
+        let postsHtml = '<div class="space-y-1 overflow-y-auto no-scrollbar flex-1 flex flex-col justify-start min-h-0">';
+        
         dayPosts.forEach(post => {
           const isMain = post.type === 'Main Video' || isWednesday;
           const statusBg = post.status === 'Done' ? 'border-emerald-500/60 bg-emerald-950/70 text-emerald-200 hover:border-emerald-400' :
@@ -1447,26 +1456,14 @@ const now = new Date();
                            post.type === 'Short / Reel' ? 'fa-film text-emerald-400' :
                            post.type === 'Story' ? 'fa-circle-notch text-pink-400' : 'fa-image text-blue-400';
 
+          // Single-line compact card button
           postsHtml += `
-            <div onclick="openEditModal('${post.id}')" class="post-card p-2 sm:p-2.5 rounded-xl border ${statusBg} text-[11px] cursor-pointer hover:scale-[1.01] transition-all shadow-md flex flex-col justify-between gap-1.5 select-none">
-              <div class="flex items-start justify-between gap-1.5 leading-snug">
-                <span class="font-bold text-slate-100 flex items-center gap-1.5 line-clamp-2">
-                  <i class="fa-solid ${typeIcon} text-[10px] shrink-0"></i>
-                  <span class="line-clamp-2">${titleDisplay}</span>
-                </span>
-                <span class="text-[9px] font-mono shrink-0 px-1.5 py-0.5 rounded bg-slate-900/80 border border-slate-700/60 text-amber-300 font-semibold">${timeDisplay || '18:00'}</span>
+            <div onclick="openEditModal('${post.id}')" title="${titleDisplay}" class="post-card p-1.5 rounded-md border ${statusBg} text-[10px] cursor-pointer hover:scale-[1.02] transition-transform shadow-sm flex items-center justify-between gap-1.5 select-none shrink-0">
+              <div class="flex items-center gap-1.5 overflow-hidden">
+                <i class="fa-solid ${typeIcon} shrink-0"></i>
+                <span class="font-bold text-slate-100 truncate leading-none mt-0.5">${titleDisplay}</span>
               </div>
-              <div class="flex items-center justify-between text-[9px] text-slate-300 pt-1 border-t border-white/5 gap-1.5">
-                <div class="flex items-center gap-1.5 shrink-0">
-                  ${renderPlatformIcons(post.platforms)}
-                </div>
-                <div class="flex items-center gap-1 shrink-0 ml-auto">
-                  <div class="flex items-center gap-0.5">
-                    ${getLanguageBadges(post)}
-                  </div>
-                  <span class="text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-900/60 border border-white/10">${post.status}</span>
-                </div>
-              </div>
+              <span class="text-[8px] font-mono shrink-0 px-1 py-0.5 rounded bg-black/25 text-amber-300 font-semibold leading-none">${timeDisplay || '18:00'}</span>
             </div>
           `;
         });
@@ -1474,7 +1471,6 @@ const now = new Date();
 
         cell.innerHTML = headerHtml + postsHtml;
         container.appendChild(cell);
-      }
 
       // Trailing padding cells
       const totalCells = firstDayOfWeek + daysInMonth;

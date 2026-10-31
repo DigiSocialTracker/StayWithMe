@@ -779,48 +779,58 @@
             </div>
         </section>
 
-        <!-- RIGHT PANEL: Exporters & Transcript Editor (Slimmer) -->
-        <aside class="w-76 border-l border-slate-800 bg-slate-900/60 flex flex-col flex-shrink-0 overflow-hidden">
-            
-            <!-- Action Header: Exporters -->
-            <div class="p-3 border-b border-slate-800 bg-slate-900/90 space-y-2">
-                <div class="flex items-center justify-between">
-                    <span class="text-xs font-bold text-white uppercase tracking-wider">Export Automation</span>
-                    <span class="text-[10px] text-slate-400" id="lineCountBadge">0 Lines</span>
-                </div>
+        <!-- RIGHT PANEL CONTAINER WITH FLOATING COLLAPSE/EXPAND TAB -->
+        <div class="relative flex flex-shrink-0 z-20">
+            <!-- Edge Arrow Tab: Stays on the right border; when closed it remains visible on the far right edge -->
+            <button id="toggleRightPanelBtn" type="button" class="absolute -left-5 top-1/2 -translate-y-1/2 z-30 w-5 h-14 bg-slate-800 hover:bg-indigo-600 text-slate-300 hover:text-white border-y border-l border-slate-700 hover:border-indigo-500 rounded-l-md flex items-center justify-center cursor-pointer shadow-2xl transition-all" title="Collapse Transcript Panel">
+                <svg id="rightPanelArrowIcon" class="w-3.5 h-3.5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
+                </svg>
+            </button>
+
+            <!-- RIGHT PANEL: Width reduced by ~1/3 (w-52 = 208px), with smooth sliding transition -->
+            <aside id="rightPanel" class="w-[250px] border-l border-slate-800 bg-slate-900/60 flex flex-col flex-shrink-0 overflow-hidden transition-all duration-300">
                 
-                <!-- AE JSX Exporter -->
-                <button id="downloadJsxBtn" class="w-full py-2 px-3 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white rounded-lg text-xs font-bold shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 transition active:scale-[0.98]">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                    Download AE Script (.jsx)
-                </button>
+                <!-- Action Header: Exporters -->
+                <div class="p-2.5 border-b border-slate-800 bg-slate-900/90 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[11px] font-bold text-white uppercase tracking-wider">Export Automation</span>
+                        <span class="text-[10px] text-slate-400" id="lineCountBadge">0 Lines</span>
+                    </div>
+                    
+                    <!-- AE JSX Exporter -->
+                    <button id="downloadJsxBtn" class="w-full py-1.5 px-2 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white rounded-lg text-xs font-bold shadow-md shadow-indigo-600/30 flex items-center justify-center gap-1.5 transition active:scale-[0.98]">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                        AE Script (.jsx)
+                    </button>
 
-                <!-- PNG Sequence Zip Exporter Modal Launcher -->
-                <button id="exportPngModalBtn" class="w-full py-1.5 px-3 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white rounded-lg text-xs font-bold shadow-lg shadow-pink-600/20 flex items-center justify-center gap-2 transition active:scale-[0.98]">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                    Export PNG Sequence (.zip)
-                </button>
+                    <!-- PNG Sequence Zip Exporter Modal Launcher -->
+                    <button id="exportPngModalBtn" class="w-full py-1.5 px-2 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white rounded-lg text-xs font-bold shadow-md shadow-pink-600/20 flex items-center justify-center gap-1.5 transition active:scale-[0.98]">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        PNG Zip Sequence
+                    </button>
 
-                <!-- SRT Exporter -->
-                <button id="downloadSrtBtn" class="w-full py-1.5 px-3 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 rounded-lg text-xs font-medium flex items-center justify-center gap-2 transition">
-                    <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                    Download Formatted .srt
-                </button>
-            </div>
-
-            <!-- Editable Transcript List -->
-            <div class="flex-1 flex flex-col overflow-hidden p-3">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="text-xs font-bold text-slate-300">Editable Transcript</span>
-                    <span class="text-[10px] text-slate-500">Click any card to jump playhead</span>
+                    <!-- SRT Exporter -->
+                    <button id="downloadSrtBtn" class="w-full py-1.5 px-2 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 rounded-lg text-xs font-medium flex items-center justify-center gap-1.5 transition">
+                        <svg class="w-3 h-3 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        Download .srt
+                    </button>
                 </div>
 
-                <div id="transcriptList" class="flex-1 overflow-y-auto space-y-2.5 pr-1">
-                    <!-- Cards injected dynamically -->
-                </div>
-            </div>
+                <!-- Editable Transcript List -->
+                <div class="flex-1 flex flex-col overflow-hidden p-2.5">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <span class="text-xs font-bold text-slate-300">Transcript</span>
+                        <span class="text-[9px] text-slate-500">Click to seek</span>
+                    </div>
 
-        </aside>
+                    <div id="transcriptList" class="flex-1 overflow-y-auto space-y-2 pr-0.5">
+                        <!-- Cards injected dynamically -->
+                    </div>
+                </div>
+
+            </aside>
+        </div>
 
     </main>
 
@@ -3832,6 +3842,36 @@ if (markersViewport) {
                     drawAudioWaveform();
                     updatePreview();
                 }, 50);
+            });
+        }
+// Toggle Right Transcript Panel (Slide & Rotate Arrow)
+        const toggleRightPanelBtn = document.getElementById('toggleRightPanelBtn');
+        const rightPanel = document.getElementById('rightPanel');
+        const rightPanelArrowIcon = document.getElementById('rightPanelArrowIcon');
+
+        if (toggleRightPanelBtn && rightPanel) {
+            toggleRightPanelBtn.addEventListener('click', () => {
+                const isCollapsed = rightPanel.classList.contains('w-0');
+                if (isCollapsed) {
+                    // Expand panel
+                    rightPanel.classList.remove('w-0', 'border-l-0');
+                    rightPanel.classList.add('w-[250px]');
+                    if (rightPanelArrowIcon) rightPanelArrowIcon.classList.remove('rotate-180');
+                    toggleRightPanelBtn.title = "Collapse Transcript Panel";
+                } else {
+                    // Collapse panel
+                    rightPanel.classList.remove('w-[250px]');
+                    rightPanel.classList.add('w-0', 'border-l-0');
+                    if (rightPanelArrowIcon) rightPanelArrowIcon.classList.add('rotate-180');
+                    toggleRightPanelBtn.title = "Expand Transcript Panel";
+                }
+
+                // Allow timeline canvas & ruler to expand across the newly opened width
+                setTimeout(() => {
+                    drawAudioWaveform();
+                    drawTimeRuler();
+                    updatePreview();
+                }, 310);
             });
         }
 

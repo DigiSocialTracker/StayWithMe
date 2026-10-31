@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Karaoke Expression Generator & Motion Studio Pro</title>
+    <title>Stay with Me Caption Generator & Motion Studio Pro</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- JSZip for zipped PNG sequence exports -->
@@ -90,13 +90,8 @@
         .effect-comic {
             text-shadow: 3px 3px 0px #000, -2px -2px 0px #000, 2px -2px 0px #000, -2px 2px 0px #000, 5px 5px 0px #f59e0b;
         }
-#markersViewport::-webkit-scrollbar {
-            height: 6px;
-        }
-        #markersViewport::-webkit-scrollbar-thumb {
-            background: #475569;
-            border-radius: 3px;
-        }
+
+
         .marker-segment {
             position: absolute;
             top: 3px;
@@ -206,26 +201,87 @@
             pointer-events: none;
             white-space: nowrap;
         }
-        .marker-playhead {
-            position: absolute;
-            top: -8px;
-            bottom: -8px;
-            width: 3px;
-            background: #38bdf8;
-            z-index: 40;
-            cursor: ew-resize;
-            box-shadow: 0 0 10px #0284c7;
-        }
-        .marker-playhead::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            border-left: 5px solid transparent;
-            border-right: 5px solid transparent;
-            border-top: 6px solid #38bdf8;
-        }
+        /* Completely hide scrollbars on the timeline track */
+#markersViewport {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+}
+#markersViewport::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+    width: 0;
+    height: 0;
+}
+
+/* Time Ruler on Top of Track */
+#timeRulerCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 22px;
+    width: 100%;
+    z-index: 20;
+    pointer-events: auto;
+    cursor: pointer;
+    background: #0b1120;
+    border-bottom: 1px solid rgba(51, 65, 85, 0.7);
+}
+
+/* Red Playhead Line with Down-Arrow Header (CapCut / Premiere Style) */
+.marker-playhead {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #f43f5e;
+    z-index: 50;
+    cursor: ew-resize;
+    box-shadow: 0 0 8px rgba(244, 63, 94, 0.7);
+    pointer-events: auto;
+}
+.marker-playhead::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 7px solid transparent;
+    border-right: 7px solid transparent;
+    border-top: 10px solid #f43f5e;
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.6));
+    cursor: pointer;
+}
+
+/* Layer adjustments for top ruler spacing */
+.marker-segment {
+    position: absolute;
+    top: 26px;
+    bottom: 3px;
+    background: rgba(99, 102, 241, 0.38);
+    border-top: 1.5px solid rgba(129, 140, 248, 0.9);
+    border-bottom: 1.5px solid rgba(129, 140, 248, 0.9);
+    border-radius: 4px;
+    transition: background 0.15s ease;
+    cursor: grab;
+}
+.marker-segment:active {
+    cursor: grabbing;
+}
+.marker-gap {
+    position: absolute;
+    top: 26px;
+    bottom: 4px;
+    background: repeating-linear-gradient(45deg, rgba(245, 158, 11, 0.15), rgba(245, 158, 11, 0.15) 4px, rgba(245, 158, 11, 0.28) 4px, rgba(245, 158, 11, 0.28) 8px);
+    border: 1px dashed rgba(245, 158, 11, 0.5);
+    border-radius: 3px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    z-index: 10;
+}
     </style>
 </head>
 <body class="h-full flex flex-col font-sans overflow-hidden bg-slate-950 text-slate-200">
@@ -486,19 +542,19 @@
                     <p class="text-[9px] text-slate-400">Holds text completely still at the start or end before/after animation begins.</p>
                     <div class="grid grid-cols-2 gap-2">
                         <div>
-                            <div class="flex justify-between text-[10px] text-slate-300 mb-0.5">
-                                <span>Start Freeze</span>
-                                <span id="globalFreezeInVal" class="text-cyan-400 font-mono">0.30s</span>
-                            </div>
-                            <input type="range" id="globalFreezeInInput" min="0" max="2.0" step="0.05" value="0.30" class="w-full h-1 bg-slate-700 rounded appearance-none cursor-pointer accent-cyan-400">
-                        </div>
-                        <div>
-                            <div class="flex justify-between text-[10px] text-slate-300 mb-0.5">
-                                <span>End Freeze</span>
-                                <span id="globalFreezeOutVal" class="text-amber-400 font-mono">0.30s</span>
-                            </div>
-                            <input type="range" id="globalFreezeOutInput" min="0" max="2.0" step="0.05" value="0.30" class="w-full h-1 bg-slate-700 rounded appearance-none cursor-pointer accent-amber-400">
-                        </div>
+    <div class="flex justify-between text-[10px] text-slate-300 mb-0.5">
+        <span>Start Freeze</span>
+        <span id="globalFreezeInVal" class="text-cyan-400 font-mono">0.15s</span>
+    </div>
+    <input type="range" id="globalFreezeInInput" min="0" max="2.0" step="0.05" value="0.15" class="w-full h-1 bg-slate-700 rounded appearance-none cursor-pointer accent-cyan-400">
+</div>
+<div>
+    <div class="flex justify-between text-[10px] text-slate-300 mb-0.5">
+        <span>End Freeze</span>
+        <span id="globalFreezeOutVal" class="text-amber-400 font-mono">0.15s</span>
+    </div>
+    <input type="range" id="globalFreezeOutInput" min="0" max="2.0" step="0.05" value="0.15" class="w-full h-1 bg-slate-700 rounded appearance-none cursor-pointer accent-amber-400">
+</div>
                     </div>
                 </div>
 
@@ -506,9 +562,9 @@
                 <div class="bg-slate-800/60 border border-slate-700/80 rounded-xl p-3 space-y-3">
                     <div class="flex items-center justify-between">
                         <label for="enableBoxInput" class="text-xs font-bold text-emerald-400 flex items-center gap-1.5 cursor-pointer">
-                            <input type="checkbox" id="enableBoxInput" checked class="w-4 h-4 rounded border-slate-600 text-indigo-600 bg-slate-700 focus:ring-indigo-500 cursor-pointer">
-                            Active Word Rounded Box
-                        </label>
+    <input type="checkbox" id="enableBoxInput" class="w-4 h-4 rounded border-slate-600 text-indigo-600 bg-slate-700 focus:ring-indigo-500 cursor-pointer">
+    Active Word Rounded Box
+</label>
                         <span class="text-[9px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded border border-emerald-500/30">Vector Shape</span>
                     </div>
 
@@ -636,7 +692,7 @@
                             <span class="flex items-center gap-1.5">
                                 <span class="w-2 h-2 rounded bg-indigo-500 inline-block"></span> Captions [In/Out Marker]
                                 <span class="w-2 h-2 rounded bg-amber-500/80 inline-block ml-2"></span> Silence Gap
-                                <span class="text-slate-500 ml-2 hidden sm:inline">(Scroll wheel pans track • Alt+Wheel or Ctrl+Wheel zooms • Space plays)</span>
+                                <span class="text-slate-500 ml-2 hidden sm:inline">(Mouse Wheel Zooms • Middle-Click Drag pans track • Double-click layer to edit text • Drag layer to slide)</span>
                             </span>
 
                             <!-- Zoom & Split Action Toolbar -->
@@ -657,13 +713,14 @@
                         </div>
 
                         <!-- Scrollable Viewport Wrapper for Zooming & Dragging (Taller for Waveform) -->
-                        <div id="markersViewport" class="w-full overflow-x-auto overflow-y-visible rounded-lg border border-slate-700 bg-slate-950 relative" style="scrollbar-width: thin;">
-                            <div id="markersTrack" class="relative h-28 select-none cursor-pointer" style="width: 100%; min-width: 100%;">
-                                <!-- Audio Waveform Canvas directly layered behind markers -->
-                                <canvas id="waveformCanvas" class="absolute inset-0 w-full h-full pointer-events-none z-0"></canvas>
-                                <!-- In/Out segments, gaps, and draggable marker flags rendered dynamically above canvas -->
-                            </div>
-                        </div>
+                        <div id="markersViewport" class="w-full overflow-x-auto overflow-y-visible rounded-lg border border-slate-700 bg-slate-950 relative select-none">
+    <div id="markersTrack" class="relative h-28 select-none" style="width: 100%; min-width: 100%;">
+        <!-- Top Time Ruler Canvas -->
+        <canvas id="timeRulerCanvas"></canvas>
+        <!-- Audio Waveform Canvas -->
+        <canvas id="waveformCanvas" class="absolute inset-0 w-full h-full pointer-events-none z-0" style="top: 24px;"></canvas>
+    </div>
+</div>
                     </div>
                 </div>
             </div>
@@ -1460,8 +1517,8 @@
             }
 
             // Preserve freeze settings across regrouping
-            const defaultFreezeIn = parseFloat(document.getElementById('globalFreezeInInput')?.value || 0.30);
-            const defaultFreezeOut = parseFloat(document.getElementById('globalFreezeOutInput')?.value || 0.30);
+            const defaultFreezeIn = parseFloat(document.getElementById('globalFreezeInInput')?.value || 0.15);
+const defaultFreezeOut = parseFloat(document.getElementById('globalFreezeOutInput')?.value || 0.15);
 
             // Re-allocate timings sequentially
             let runningTimelineClock = 0.2;
@@ -1574,8 +1631,8 @@
             const totalGroupChars = newSubGroups.map(grp => grp.reduce((acc, w) => acc + Math.max(1, w.text.length), 0));
             const grandTotalChars = totalGroupChars.reduce((a, b) => a + b, 0) || 1;
 
-            const defaultFreezeIn = targetSub.freezeIn ?? 0.30;
-            const defaultFreezeOut = targetSub.freezeOut ?? 0.30;
+            const defaultFreezeIn = targetSub.freezeIn ?? 0.15;
+const defaultFreezeOut = targetSub.freezeOut ?? 0.15;
 
             let runningClock = targetSub.startTime;
             const replacementSegments = [];
@@ -1968,6 +2025,7 @@ if (activeIdx >= 0) {
             // Re-render elements
             renderMarkersTrack();
             drawAudioWaveform();
+            drawTimeRuler(); // <--- ADD THIS LINE HERE
 
             // Reposition scrollLeft so the exact audio frame stays anchored under the mouse cursor
             const newTrackWidth = markersTrack.scrollWidth || 1;
@@ -2115,174 +2173,306 @@ if (activeIdx >= 0) {
             }
         }
 
-        function renderMarkersTrack() {
-            if (!markersTrack) return;
-            
-            const oldCanvas = document.getElementById('waveformCanvas');
-            markersTrack.innerHTML = '';
-            if (oldCanvas) {
-                markersTrack.appendChild(oldCanvas);
-            } else {
-                const cvs = document.createElement('canvas');
-                cvs.id = 'waveformCanvas';
-                cvs.className = 'absolute inset-0 w-full h-full pointer-events-none z-0';
-                markersTrack.appendChild(cvs);
-            }
+        // --- PASTE STEP 6 CODE HERE ---
+        function drawTimeRuler() {
+            const rulerCanvas = document.getElementById('timeRulerCanvas');
+            if (!rulerCanvas || !markersTrack || totalDuration <= 0) return;
 
-            if (totalDuration <= 0) return;
+            const trackWidth = markersTrack.scrollWidth || markersTrack.clientWidth;
+            rulerCanvas.width = trackWidth;
+            rulerCanvas.height = 24;
 
-            subtitlesData.sort((a, b) => a.startTime - b.startTime);
+            const ctx = rulerCanvas.getContext('2d');
+            ctx.clearRect(0, 0, trackWidth, 24);
 
-            // Leading Silence Gap
-            if (subtitlesData.length > 0 && subtitlesData[0].startTime > 0.3) {
-                const gapEnd = subtitlesData[0].startTime;
-                const gapEl = document.createElement('div');
-                gapEl.className = 'marker-gap';
-                gapEl.style.left = `0%`;
-                gapEl.style.width = `${(gapEnd / totalDuration) * 100}%`;
-                gapEl.innerHTML = `<span class="gap-btn">+ Add Line</span>`;
-                gapEl.onclick = (e) => { e.stopPropagation(); addSegmentInGap(0, gapEnd); };
-                markersTrack.appendChild(gapEl);
-            }
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, 0, trackWidth, 24);
 
-            // Intermediate Gaps
-            for (let i = 0; i < subtitlesData.length - 1; i++) {
-                const curEnd = subtitlesData[i].endTime;
-                const nextStart = subtitlesData[i + 1].startTime;
-                if (nextStart > curEnd + 0.25) {
-                    const gapEl = document.createElement('div');
-                    gapEl.className = 'marker-gap';
-                    gapEl.style.left = `${(curEnd / totalDuration) * 100}%`;
-                    gapEl.style.width = `${((nextStart - curEnd) / totalDuration) * 100}%`;
-                    gapEl.innerHTML = `<span class="gap-btn">+ Add</span>`;
-                    gapEl.onclick = (e) => { e.stopPropagation(); addSegmentInGap(curEnd, nextStart); };
-                    markersTrack.appendChild(gapEl);
+            const pxPerSec = trackWidth / totalDuration;
+            let stepSec = 1;
+            if (pxPerSec < 20) stepSec = 10;
+            else if (pxPerSec < 50) stepSec = 5;
+            else if (pxPerSec < 120) stepSec = 2;
+            else if (pxPerSec < 250) stepSec = 1;
+            else stepSec = 0.5;
+
+            ctx.fillStyle = '#94a3b8';
+            ctx.strokeStyle = '#475569';
+            ctx.font = '10px JetBrains Mono, monospace';
+            ctx.lineWidth = 1;
+
+            for (let t = 0; t <= totalDuration; t += (stepSec / 2)) {
+                const x = (t / totalDuration) * trackWidth;
+                const isMajor = Math.abs(t % stepSec) < 0.001;
+
+                ctx.beginPath();
+                if (isMajor) {
+                    ctx.moveTo(x, 10);
+                    ctx.lineTo(x, 24);
+                    ctx.stroke();
+
+                    const mins = Math.floor(t / 60);
+                    const secs = Math.floor(t % 60);
+                    const timeLabel = `${mins}:${String(secs).padStart(2, '0')}`;
+                    ctx.fillText(timeLabel, x + 3, 10);
+                } else {
+                    ctx.moveTo(x, 16);
+                    ctx.lineTo(x, 24);
+                    ctx.stroke();
                 }
             }
-
-            // Trailing Gap
-            if (subtitlesData.length > 0 && subtitlesData[subtitlesData.length - 1].endTime < totalDuration - 0.3) {
-                const gapStart = subtitlesData[subtitlesData.length - 1].endTime;
-                const gapEl = document.createElement('div');
-                gapEl.className = 'marker-gap';
-                gapEl.style.left = `${(gapStart / totalDuration) * 100}%`;
-                gapEl.style.width = `${((totalDuration - gapStart) / totalDuration) * 100}%`;
-                gapEl.innerHTML = `<span class="gap-btn">+ Add Line</span>`;
-                gapEl.onclick = (e) => { e.stopPropagation(); addSegmentInGap(gapStart, totalDuration); };
-                markersTrack.appendChild(gapEl);
-            }
-
-            // Render Subtitle Segments with Freeze Zones & Handles
-            subtitlesData.forEach((sub, idx) => {
-                const segLeft = (sub.startTime / totalDuration) * 100;
-                const segDur = sub.endTime - sub.startTime;
-                const segWidth = (segDur / totalDuration) * 100;
-
-                sub.freezeIn = sub.freezeIn ?? 0.30;
-                sub.freezeOut = sub.freezeOut ?? 0.30;
-
-                const segEl = document.createElement('div');
-                segEl.id = `marker-seg-${idx}`;
-                segEl.className = `marker-segment ${currentTime >= sub.startTime && currentTime <= sub.endTime ? 'active-segment' : ''}`;
-                segEl.style.left = `${segLeft}%`;
-                segEl.style.width = `${Math.max(0.5, segWidth)}%`;
-
-                // Visual Freeze In Shaded Zone
-                const freezeInPct = Math.min(45, (sub.freezeIn / segDur) * 100);
-                const freezeInZone = document.createElement('div');
-                freezeInZone.className = 'marker-freeze-zone border-r border-cyan-400/60';
-                freezeInZone.style.left = '0%';
-                freezeInZone.style.width = `${freezeInPct}%`;
-                freezeInZone.title = `Start Freeze: ${sub.freezeIn.toFixed(2)}s`;
-                segEl.appendChild(freezeInZone);
-
-                // Visual Freeze Out Shaded Zone
-                const freezeOutPct = Math.min(45, (sub.freezeOut / segDur) * 100);
-                const freezeOutZone = document.createElement('div');
-                freezeOutZone.className = 'marker-freeze-zone border-l border-amber-400/60';
-                freezeOutZone.style.right = '0%';
-                freezeOutZone.style.width = `${freezeOutPct}%`;
-                freezeOutZone.title = `End Freeze: ${sub.freezeOut.toFixed(2)}s`;
-                segEl.appendChild(freezeOutZone);
-
-                // Segment Label
-                const label = document.createElement('div');
-                label.className = "absolute left-2.5 top-1 right-2 text-[10px] text-white/90 font-mono pointer-events-none select-none flex items-center gap-1.5 overflow-hidden whitespace-nowrap z-10";
-                const textPreview = sub.words.map(w => w.text).join(' ');
-                label.innerHTML = `<span class="bg-indigo-600/80 px-1 py-0.2 rounded font-bold text-[9px] text-white">#${idx + 1}</span> <span class="truncate text-slate-200">${textPreview || '(empty)'}</span>`;
-                segEl.appendChild(label);
-
-                // 1. IN Handle (Green - Left edge)
-                const inHandle = document.createElement('div');
-                inHandle.className = 'marker-handle marker-handle-in';
-                inHandle.title = `Layer Start: ${formatTime(sub.startTime)} (Drag to move start)`;
-                inHandle.addEventListener('mousedown', (e) => initMarkerDrag(e, idx, 'in'));
-                segEl.appendChild(inHandle);
-
-               // 2. Freeze IN Handle (Cyan - Shorter & offset minimum 7px from green handle so it never merges at 0s)
-                const freezeInHandle = document.createElement('div');
-                freezeInHandle.className = 'marker-handle marker-handle-freeze-in';
-                // If freeze is 0%, offset by 7px so it stays clearly clickable right next to the green edge
-                freezeInHandle.style.left = sub.freezeIn <= 0.01 ? '7px' : `calc(${freezeInPct}% + 4px)`;
-                freezeInHandle.title = `Start Freeze: ${sub.freezeIn.toFixed(2)}s (Drag to adjust static hold)`;
-                freezeInHandle.addEventListener('mousedown', (e) => initMarkerDrag(e, idx, 'freeze-in'));
-                segEl.appendChild(freezeInHandle);
-
-                // 3. Freeze OUT Handle (Amber - Shorter & offset minimum 7px from red handle so it never merges at 0s)
-                const freezeOutHandle = document.createElement('div');
-                freezeOutHandle.className = 'marker-handle marker-handle-freeze-out';
-                freezeOutHandle.style.right = sub.freezeOut <= 0.01 ? '7px' : `calc(${freezeOutPct}% + 4px)`;
-                freezeOutHandle.title = `End Freeze: ${sub.freezeOut.toFixed(2)}s (Drag to adjust static hold)`;
-                freezeOutHandle.addEventListener('mousedown', (e) => initMarkerDrag(e, idx, 'freeze-out'));
-                segEl.appendChild(freezeOutHandle);
-
-                // 4. OUT Handle (Red - Right edge)
-                const outHandle = document.createElement('div');
-                outHandle.className = 'marker-handle marker-handle-out';
-                outHandle.title = `Layer End: ${formatTime(sub.endTime)} (Drag to move end)`;
-                outHandle.addEventListener('mousedown', (e) => initMarkerDrag(e, idx, 'out'));
-                segEl.appendChild(outHandle);
-
-                segEl.addEventListener('click', (e) => {
-                    if (e.target.classList.contains('marker-handle')) return;
-                    selectedCardId = sub.id;
-                    selectedCardIndex = idx;
-                    currentTime = sub.startTime;
-                    if (audioPlayer && audioPlayer.src) audioPlayer.currentTime = currentTime;
-                    timelineSlider.value = currentTime;
-                    renderTranscriptList(); // Re-render transcript so selection highlight updates
-                    updatePreview();
-                    updateMarkersPlayhead(true);
-                });
-
-                markersTrack.appendChild(segEl);
-            });
-
-            // Playhead Cursor
-            const playhead = document.createElement('div');
-            playhead.id = 'markersPlayhead';
-            playhead.className = 'marker-playhead';
-            playhead.style.left = `${(currentTime / totalDuration) * 100}%`;
-            playhead.addEventListener('mousedown', initPlayheadDrag);
-            markersTrack.appendChild(playhead);
-
-            markersTrack.onclick = function(e) {
-                if (e.target === markersTrack) {
-                    const rect = markersTrack.getBoundingClientRect();
-                    const clickX = e.clientX - rect.left;
-                    currentTime = Math.max(0, Math.min(totalDuration, (clickX / rect.width) * totalDuration));
-                    if (audioPlayer && audioPlayer.src) audioPlayer.currentTime = currentTime;
-                    timelineSlider.value = currentTime;
-                    updatePreview();
-                    updateMarkersPlayhead(false);
-                }
-            };
-
-            drawAudioWaveform();
         }
+        // ------------------------------
 
-        // Draggable playhead on timeline track
+        function renderMarkersTrack() {
+    if (!markersTrack) return;
+
+    const oldCanvas = document.getElementById('waveformCanvas');
+    const oldRuler = document.getElementById('timeRulerCanvas');
+    markersTrack.innerHTML = '';
+
+    if (oldRuler) {
+        markersTrack.appendChild(oldRuler);
+    } else {
+        const rCvs = document.createElement('canvas');
+        rCvs.id = 'timeRulerCanvas';
+        markersTrack.appendChild(rCvs);
+    }
+
+    if (oldCanvas) {
+        markersTrack.appendChild(oldCanvas);
+    } else {
+        const cvs = document.createElement('canvas');
+        cvs.id = 'waveformCanvas';
+        cvs.className = 'absolute inset-0 w-full h-full pointer-events-none z-0';
+        cvs.style.top = '24px';
+        markersTrack.appendChild(cvs);
+    }
+
+    if (totalDuration <= 0) return;
+
+    subtitlesData.sort((a, b) => a.startTime - b.startTime);
+
+    // Leading Silence Gap
+    if (subtitlesData.length > 0 && subtitlesData[0].startTime > 0.3) {
+        const gapEnd = subtitlesData[0].startTime;
+        const gapEl = document.createElement('div');
+        gapEl.className = 'marker-gap';
+        gapEl.style.left = `0%`;
+        gapEl.style.width = `${(gapEnd / totalDuration) * 100}%`;
+        gapEl.innerHTML = `<span class="gap-btn">+ Add Line</span>`;
+        gapEl.onclick = (e) => { e.stopPropagation(); addSegmentInGap(0, gapEnd); };
+        markersTrack.appendChild(gapEl);
+    }
+
+    // Intermediate Gaps
+    for (let i = 0; i < subtitlesData.length - 1; i++) {
+        const curEnd = subtitlesData[i].endTime;
+        const nextStart = subtitlesData[i + 1].startTime;
+        if (nextStart > curEnd + 0.25) {
+            const gapEl = document.createElement('div');
+            gapEl.className = 'marker-gap';
+            gapEl.style.left = `${(curEnd / totalDuration) * 100}%`;
+            gapEl.style.width = `${((nextStart - curEnd) / totalDuration) * 100}%`;
+            gapEl.innerHTML = `<span class="gap-btn">+ Add</span>`;
+            gapEl.onclick = (e) => { e.stopPropagation(); addSegmentInGap(curEnd, nextStart); };
+            markersTrack.appendChild(gapEl);
+        }
+    }
+
+    // Trailing Gap
+    if (subtitlesData.length > 0 && subtitlesData[subtitlesData.length - 1].endTime < totalDuration - 0.3) {
+        const gapStart = subtitlesData[subtitlesData.length - 1].endTime;
+        const gapEl = document.createElement('div');
+        gapEl.className = 'marker-gap';
+        gapEl.style.left = `${(gapStart / totalDuration) * 100}%`;
+        gapEl.style.width = `${((totalDuration - gapStart) / totalDuration) * 100}%`;
+        gapEl.innerHTML = `<span class="gap-btn">+ Add Line</span>`;
+        gapEl.onclick = (e) => { e.stopPropagation(); addSegmentInGap(gapStart, totalDuration); };
+        markersTrack.appendChild(gapEl);
+    }
+
+    // Render Subtitle Segments with Drag Movement & Inline Edit
+    subtitlesData.forEach((sub, idx) => {
+        const segLeft = (sub.startTime / totalDuration) * 100;
+        const segDur = sub.endTime - sub.startTime;
+        const segWidth = (segDur / totalDuration) * 100;
+
+        sub.freezeIn = sub.freezeIn ?? 0.15;
+        sub.freezeOut = sub.freezeOut ?? 0.15;
+
+        const segEl = document.createElement('div');
+        segEl.id = `marker-seg-${idx}`;
+        segEl.className = `marker-segment ${currentTime >= sub.startTime && currentTime <= sub.endTime ? 'active-segment' : ''}`;
+        segEl.style.left = `${segLeft}%`;
+        segEl.style.width = `${Math.max(0.5, segWidth)}%`;
+
+        // Freeze In Zone
+        const freezeInPct = Math.min(45, (sub.freezeIn / segDur) * 100);
+        const freezeInZone = document.createElement('div');
+        freezeInZone.className = 'marker-freeze-zone border-r border-cyan-400/60';
+        freezeInZone.style.left = '0%';
+        freezeInZone.style.width = `${freezeInPct}%`;
+        freezeInZone.title = `Start Freeze: ${sub.freezeIn.toFixed(2)}s`;
+        segEl.appendChild(freezeInZone);
+
+        // Freeze Out Zone
+        const freezeOutPct = Math.min(45, (sub.freezeOut / segDur) * 100);
+        const freezeOutZone = document.createElement('div');
+        freezeOutZone.className = 'marker-freeze-zone border-l border-amber-400/60';
+        freezeOutZone.style.right = '0%';
+        freezeOutZone.style.width = `${freezeOutPct}%`;
+        freezeOutZone.title = `End Freeze: ${sub.freezeOut.toFixed(2)}s`;
+        segEl.appendChild(freezeOutZone);
+
+        // Text preview label
+        const label = document.createElement('div');
+        label.className = "absolute left-2.5 top-1 right-2 text-[10px] text-white/90 font-mono pointer-events-none select-none flex items-center gap-1.5 overflow-hidden whitespace-nowrap z-10";
+        const textPreview = sub.words.map(w => w.text).join(' ');
+        label.innerHTML = `<span class="bg-indigo-600/80 px-1 py-0.2 rounded font-bold text-[9px] text-white">#${idx + 1}</span> <span class="truncate text-slate-200 line-text-preview">${textPreview || '(empty)'}</span>`;
+        segEl.appendChild(label);
+
+        // Handles
+        const inHandle = document.createElement('div');
+        inHandle.className = 'marker-handle marker-handle-in';
+        inHandle.title = `Layer Start: ${formatTime(sub.startTime)}`;
+        inHandle.addEventListener('mousedown', (e) => initMarkerDrag(e, idx, 'in'));
+        segEl.appendChild(inHandle);
+
+        const freezeInHandle = document.createElement('div');
+        freezeInHandle.className = 'marker-handle marker-handle-freeze-in';
+        freezeInHandle.style.left = sub.freezeIn <= 0.01 ? '7px' : `calc(${freezeInPct}% + 4px)`;
+        freezeInHandle.title = `Start Freeze: ${sub.freezeIn.toFixed(2)}s`;
+        freezeInHandle.addEventListener('mousedown', (e) => initMarkerDrag(e, idx, 'freeze-in'));
+        segEl.appendChild(freezeInHandle);
+
+        const freezeOutHandle = document.createElement('div');
+        freezeOutHandle.className = 'marker-handle marker-handle-freeze-out';
+        freezeOutHandle.style.right = sub.freezeOut <= 0.01 ? '7px' : `calc(${freezeOutPct}% + 4px)`;
+        freezeOutHandle.title = `End Freeze: ${sub.freezeOut.toFixed(2)}s`;
+        freezeOutHandle.addEventListener('mousedown', (e) => initMarkerDrag(e, idx, 'freeze-out'));
+        segEl.appendChild(freezeOutHandle);
+
+        const outHandle = document.createElement('div');
+        outHandle.className = 'marker-handle marker-handle-out';
+        outHandle.title = `Layer End: ${formatTime(sub.endTime)}`;
+        outHandle.addEventListener('mousedown', (e) => initMarkerDrag(e, idx, 'out'));
+        segEl.appendChild(outHandle);
+
+        // Entire Layer Drag-to-Move (Left/Right)
+        segEl.addEventListener('mousedown', (e) => {
+            if (e.button !== 0) return; // Let middle click pass through to timeline pan
+            if (e.target.classList.contains('marker-handle') || e.target.tagName === 'INPUT') return;
+            initSegmentMove(e, idx);
+        });
+
+        // Double Click Inline Caption Editor (Safe from duplicate blur/remove errors)
+        segEl.addEventListener('dblclick', (e) => {
+            e.stopPropagation();
+            if (segEl.querySelector('.inline-caption-input')) return;
+
+            const existingInput = document.querySelector('.inline-caption-input');
+            if (existingInput && existingInput.parentNode) {
+                existingInput.parentNode.removeChild(existingInput);
+            }
+
+            const currentText = sub.words.map(w => w.text).join(' ');
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = currentText;
+            input.dir = 'auto';
+            input.className = 'inline-caption-input absolute inset-x-1 top-1 bottom-1 bg-slate-900 border-2 border-indigo-400 rounded px-1.5 text-xs text-white z-40 outline-none shadow-lg';
+            
+            segEl.appendChild(input);
+            input.focus();
+            input.select();
+
+            let isCommitted = false;
+            function commitEdit() {
+                if (isCommitted) return;
+                isCommitted = true;
+
+                const newText = input.value.trim();
+                const newWords = splitIntoUnicodeWords(newText);
+                if (newWords.length > 0) {
+                    const lineDuration = Math.max(0.1, sub.endTime - sub.startTime);
+                    const perWordDur = lineDuration / newWords.length;
+                    sub.words = newWords.map((w, wIdx) => ({
+                        text: w,
+                        start: sub.startTime + (wIdx * perWordDur),
+                        end: sub.startTime + ((wIdx + 1) * perWordDur),
+                        blockId: sub.id
+                    }));
+                } else {
+                    sub.words = [{ text: "", start: sub.startTime, end: sub.endTime, blockId: sub.id }];
+                }
+                rawWordTokens = subtitlesData.flatMap(s => s.words);
+
+                if (input.parentNode) {
+                    input.parentNode.removeChild(input);
+                }
+                renderMarkersTrack();
+                renderTranscriptList();
+                updateExpressions();
+                updatePreview();
+            }
+
+            input.addEventListener('keydown', (ev) => {
+                if (ev.key === 'Enter') {
+                    commitEdit();
+                } else if (ev.key === 'Escape') {
+                    isCommitted = true;
+                    if (input.parentNode) input.parentNode.removeChild(input);
+                    renderMarkersTrack();
+                }
+                ev.stopPropagation();
+            });
+            input.addEventListener('blur', commitEdit);
+        });
+
+        markersTrack.appendChild(segEl);
+    });
+
+    // Playhead with top red arrow
+    const playhead = document.createElement('div');
+    playhead.id = 'markersPlayhead';
+    playhead.className = 'marker-playhead';
+    playhead.style.left = `${(currentTime / totalDuration) * 100}%`;
+    playhead.addEventListener('mousedown', initPlayheadDrag);
+    markersTrack.appendChild(playhead);
+
+    // Click track/ruler to position playhead
+    const timeRuler = document.getElementById('timeRulerCanvas');
+    if (timeRuler) {
+        timeRuler.onclick = function(e) {
+            const rect = markersTrack.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            currentTime = Math.max(0, Math.min(totalDuration, (clickX / rect.width) * totalDuration));
+            if (audioPlayer && audioPlayer.src) audioPlayer.currentTime = currentTime;
+            timelineSlider.value = currentTime;
+            updatePreview();
+            updateMarkersPlayhead(false);
+        };
+    }
+
+    markersTrack.onclick = function(e) {
+        if (e.target === markersTrack) {
+            const rect = markersTrack.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            currentTime = Math.max(0, Math.min(totalDuration, (clickX / rect.width) * totalDuration));
+            if (audioPlayer && audioPlayer.src) audioPlayer.currentTime = currentTime;
+            timelineSlider.value = currentTime;
+            updatePreview();
+            updateMarkersPlayhead(false);
+        }
+    };
+
+    drawAudioWaveform();
+    drawTimeRuler();
+}
+
         function initPlayheadDrag(e) {
+            if (e.button !== 0) return; // Only left click drags playhead
             e.stopPropagation();
             e.preventDefault();
             const trackRect = markersTrack.getBoundingClientRect();
@@ -2344,6 +2534,7 @@ if (activeIdx >= 0) {
         }
 
         function initMarkerDrag(e, subIndex, type) {
+            if (e.button !== 0) return; // Only left click drags marker edges
             e.stopPropagation();
             e.preventDefault();
 
@@ -2406,6 +2597,83 @@ if (activeIdx >= 0) {
             window.addEventListener('mousemove', onMouseMove);
             window.addEventListener('mouseup', onMouseUp);
         }
+
+
+// Click & Drag Entire Caption Layer Left or Right
+function initSegmentMove(e, subIndex) {
+    if (e.button !== 0) return; // Only trigger for LEFT click; allow middle click to pan
+    e.stopPropagation();
+    e.preventDefault();
+
+    const sub = subtitlesData[subIndex];
+    selectedCardId = sub.id;
+    selectedCardIndex = subIndex;
+    renderTranscriptList();
+
+    const trackRect = markersTrack.getBoundingClientRect();
+    const startMouseX = e.clientX;
+    const initialStartTime = sub.startTime;
+    const initialEndTime = sub.endTime;
+    const segDuration = initialEndTime - initialStartTime;
+
+    const prevBoundary = subIndex > 0 ? (subtitlesData[subIndex - 1].endTime + 0.05) : 0;
+    const nextBoundary = subIndex < subtitlesData.length - 1 ? (subtitlesData[subIndex + 1].startTime - 0.05) : totalDuration;
+
+    function onMouseMove(moveEvent) {
+        const deltaPx = moveEvent.clientX - startMouseX;
+        const deltaTime = (deltaPx / trackRect.width) * totalDuration;
+
+        let newStart = initialStartTime + deltaTime;
+        let newEnd = initialEndTime + deltaTime;
+
+        // Prevent collisions with adjacent layers or track bounds
+        if (newStart < prevBoundary) {
+            newStart = prevBoundary;
+            newEnd = newStart + segDuration;
+        }
+        if (newEnd > nextBoundary) {
+            newEnd = nextBoundary;
+            newStart = newEnd - segDuration;
+        }
+
+        sub.startTime = Math.max(0, newStart);
+        sub.endTime = Math.min(totalDuration, newEnd);
+
+        // Shift word timestamps synchronously
+        const timeShift = sub.startTime - initialStartTime;
+        sub.words.forEach(w => {
+            w.start += (sub.startTime - (sub.words[0]?.start || sub.startTime));
+            w.end += (sub.startTime - (sub.words[0]?.start || sub.startTime));
+        });
+
+        // Recalculate word timing boundaries within layer
+        const animStart = sub.startTime + (sub.freezeIn || 0.15);
+        const animEnd = sub.endTime - (sub.freezeOut || 0.15);
+        const animDur = Math.max(0.1, animEnd - animStart);
+        const totalChars = sub.words.reduce((sum, w) => sum + Math.max(1, w.text.length), 0);
+        let clock = animStart;
+        sub.words.forEach((w, wIdx) => {
+            const wd = (Math.max(1, w.text.length) / totalChars) * animDur;
+            w.start = clock;
+            w.end = (wIdx === sub.words.length - 1) ? animEnd : (clock + wd);
+            clock = w.end;
+        });
+
+        renderMarkersTrack();
+        renderTranscriptList();
+        updateExpressions();
+        updatePreview();
+    }
+
+    function onMouseUp() {
+        window.removeEventListener('mousemove', onMouseMove);
+        window.removeEventListener('mouseup', onMouseUp);
+    }
+
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+}
+
         function renderTranscriptList() {
             transcriptList.innerHTML = '';
             if (subtitlesData.length === 0) return;
@@ -3470,28 +3738,57 @@ const updateSelectedBtn = document.getElementById('updateSelectedBtn');
             });
         }
 
-        // Mouse Wheel: Alt+Wheel or Ctrl+Wheel zooms smoothly anchored directly to cursor
-        if (markersViewport) {
-            markersViewport.addEventListener('wheel', (e) => {
-                if (e.altKey || e.ctrlKey || e.metaKey) {
-                    e.preventDefault();
-                    e.stopPropagation();
+        // 1. Direct Mouse Wheel Zoom (no Alt required)
+if (markersViewport) {
+    markersViewport.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
 
-                    // Proportional zoom factor: smooth and continuous across 1x to 50x
-                    const zoomFactor = e.deltaY < 0 ? 1.14 : (1 / 1.14);
-                    const newZoom = Math.max(1, Math.min(50, parseFloat((trackZoomLevel * zoomFactor).toFixed(2))));
+        // Standard mouse scroll wheel zooms in / out anchored directly under the pointer
+        const zoomFactor = e.deltaY < 0 ? 1.15 : (1 / 1.15);
+        const newZoom = Math.max(1, Math.min(50, parseFloat((trackZoomLevel * zoomFactor).toFixed(2))));
+        setTrackZoom(newZoom, e.clientX);
+    }, { passive: false });
 
-                    // Pass e.clientX so zoom anchors to the cursor position
-                    setTrackZoom(newZoom, e.clientX);
-                } else {
-                    // Normal wheel without modifier keys smoothly pans track left / right
-                    if (e.deltaY !== 0) {
-                        e.preventDefault();
-                        markersViewport.scrollLeft += e.deltaY * 0.9;
-                    }
-                }
-            }, { passive: false });
+    // 2. Middle Mouse Click & Drag Pan (Captures clicks over segments, ruler, and canvas)
+    let isMiddleDragging = false;
+    let middleStartX = 0;
+    let middleStartScroll = 0;
+
+    // Use capture phase (true) so middle click works even when hovering over caption cards or canvas
+    markersViewport.addEventListener('mousedown', (e) => {
+        if (e.button === 1) { // Middle mouse button
+            e.preventDefault();
+            e.stopPropagation();
+            isMiddleDragging = true;
+            middleStartX = e.clientX;
+            middleStartScroll = markersViewport.scrollLeft;
+            document.body.style.cursor = 'grabbing';
+            markersViewport.style.cursor = 'grabbing';
         }
+    }, true);
+
+    // Prevent default browser middle-click autoscroll circle icon
+    window.addEventListener('auxclick', (e) => {
+        if (e.button === 1) e.preventDefault();
+    });
+
+    window.addEventListener('mousemove', (e) => {
+        if (isMiddleDragging) {
+            e.preventDefault();
+            const dx = e.clientX - middleStartX;
+            markersViewport.scrollLeft = middleStartScroll - dx;
+        }
+    });
+
+    window.addEventListener('mouseup', (e) => {
+        if (isMiddleDragging) {
+            isMiddleDragging = false;
+            document.body.style.cursor = '';
+            markersViewport.style.cursor = '';
+        }
+    });
+}
 
         // Spacebar Play / Pause Toggle (ignored while typing in any text box)
         window.addEventListener('keydown', (e) => {
@@ -3695,8 +3992,8 @@ const updateSelectedBtn = document.getElementById('updateSelectedBtn');
                 }
             }
 
-            const defaultFreezeIn = parseFloat(document.getElementById('globalFreezeInInput')?.value || 0.30);
-            const defaultFreezeOut = parseFloat(document.getElementById('globalFreezeOutInput')?.value || 0.30);
+            const defaultFreezeIn = parseFloat(document.getElementById('globalFreezeInInput')?.value || 0.15);
+const defaultFreezeOut = parseFloat(document.getElementById('globalFreezeOutInput')?.value || 0.15);
 
             // Build subtitle layers with freeze in/out bounds
             const newSubtitles = [];
@@ -3798,9 +4095,10 @@ const updateSelectedBtn = document.getElementById('updateSelectedBtn');
         downloadSrtBtn.addEventListener('click', exportSrtFile);
 
         window.addEventListener('resize', () => {
-            updatePreview();
-            drawAudioWaveform();
-        });
+    updatePreview();
+    drawAudioWaveform();
+    drawTimeRuler();
+});
 
         window.onload = function() {
             rawWordTokens = generateSampleDataFromText(DEFAULT_TRANSCRIPT);

@@ -1871,7 +1871,8 @@ if (activeIdx >= 0) {
   9999;
 }`;
             masterEndExprTA.value = endExpr;
-        }
+    autoSaveProject(); // <--- ADD THIS
+}
 
         function updatePreview() {
             const fontSize = fontSizeInput ? fontSizeInput.value : 25;
@@ -2600,9 +2601,10 @@ if (activeIdx >= 0) {
             }
 
             function onMouseUp() {
-                window.removeEventListener('mousemove', onMouseMove);
-                window.removeEventListener('mouseup', onMouseUp);
-            }
+        window.removeEventListener('mousemove', onMouseMove);
+        window.removeEventListener('mouseup', onMouseUp);
+        autoSaveProject(); // <--- ADD THIS
+    }
 
             window.addEventListener('mousemove', onMouseMove);
             window.addEventListener('mouseup', onMouseUp);
@@ -2678,6 +2680,7 @@ function initSegmentMove(e, subIndex) {
     function onMouseUp() {
         window.removeEventListener('mousemove', onMouseMove);
         window.removeEventListener('mouseup', onMouseUp);
+        autoSaveProject(); // <--- ADD THIS
     }
 
     window.addEventListener('mousemove', onMouseMove);
@@ -4140,15 +4143,135 @@ const defaultFreezeOut = parseFloat(document.getElementById('globalFreezeOutInpu
     drawTimeRuler();
 });
 
+// --- AUTO-SAVE TO LOCAL STORAGE ---
+const AUTOSAVE_STORAGE_KEY = "karaoke_studio_project_backup";
+
+function autoSaveProject() {
+    try {
+        if (!subtitlesData || subtitlesData.length === 0) return;
+
+        const projectPayload = {
+            subtitlesData: subtitlesData,
+            rawWordTokens: rawWordTokens,
+            totalDuration: totalDuration,
+            currentTime: currentTime,
+            customFontFamily: customFontFamily,
+            layoutMode: layoutMode,
+            settings: {
+                baseColor: baseColorInput ? baseColorInput.value : "#ffffff",
+                highlightColor: highlightColorInput ? highlightColorInput.value : "#ff4d00",
+                fontSize: fontSizeInput ? fontSizeInput.value : 25,
+                lineHeight: lineHeightInput ? lineHeightInput.value : 54,
+                posY: posYInput ? posYInput.value : 75,
+                enableBox: enableBoxInput ? enableBoxInput.checked : false,
+                boxColor: boxColorInput ? boxColorInput.value : "#1e293b",
+                freezeIn: document.getElementById('globalFreezeInInput')?.value || 0.15,
+                freezeOut: document.getElementById('globalFreezeOutInput')?.value || 0.15,
+                wordGap: wordGapInput ? wordGapInput.value : 2,
+                animPreset: animPresetSelect ? animPresetSelect.value : "pop"
+            },
+            timestamp: Date.now()
+        };
+
+        localStorage.setItem(AUTOSAVE_STORAGE_KEY, JSON.stringify(projectPayload));
+    } catch (e) {
+        console.warn("Auto-save failed (storage quota or private browsing):", e);
+    }
+}
+
+function restoreAutoSavedProject() {
+    try {
+        const rawSaved = localStorage.getItem(AUTOSAVE_STORAGE_KEY);
+        if (!rawSaved) return false;
+
+        const data = JSON.parse(rawSaved);
+        if (!data || !Array.isArray(data.subtitlesData) || data.subtitlesData.length === 0) return false;
+
+        // Restore State
+        subtitlesData = data.subtitlesData;
+        rawWordTokens = data.rawWordTokens || subtitlesData.flatMap(s => s.words);
+        totalDuration = data.totalDuration || 30;
+        currentTime = data.currentTime || 0;
+        customFontFamily = data.customFontFamily || "DIN Next LT Arabic Light";
+        layoutMode = data.layoutMode || "single";
+
+        // Restore UI Input Controls
+        if (data.settings) {
+            const s = data.settings;
+            if (baseColorInput && s.baseColor) baseColorInput.value = s.baseColor;
+            if (highlightColorInput && s.highlightColor) highlightColorInput.value = s.highlightColor;
+            if (fontSizeInput && s.fontSize) fontSizeInput.value = s.fontSize;
+            if (lineHeightInput && s.lineHeight) lineHeightInput.value = s.lineHeight;
+            if (posYInput && s.posY) posYInput.value = s.posY;
+            if (enableBoxInput) enableBoxInput.checked = !!s.enableBox;
+            if (boxColorInput && s.boxColor) boxColorInput.value = s.boxColor;
+            if (wordGapInput && s.wordGap) wordGapInput.value = s.wordGap;
+            if (animPresetSelect && s.animPreset) animPresetSelect.value = s.animPreset;
+
+            const fIn = document.getElementById('globalFreezeInInput');
+            if (fIn && s.freezeIn) {
+                fIn.value = s.freezeIn;
+                const fInVal = document.getElementById('globalFreezeInVal');
+                if (fInVal) fInVal.innerText = `${parseFloat(s.freezeIn).toFixed(2)}s`;
+            }
+            const fOut = document.getElementById('globalFreezeOutInput');
+            if (fOut && s.freezeOut) {
+                fOut.value = s.freezeOut;
+                const fOutVal = document.getElementById('globalFreezeOutVal');
+                if (fOutVal) fOutVal.innerText = `${parseFloat(s.freezeOut).toFixed(2)}s`;
+            }
+        }
+
+        // Apply Layout styling buttons
+        if (layoutMode === "double") {
+            layoutDoubleBtn.click();
+        } else {
+            layoutSingleBtn.click();
+        }
+
+        timelineSlider.max = totalDuration.toFixed(2);
+        timelineSlider.value = currentTime;
+        totalTimeDisplay.innerText = formatTime(totalDuration);
+        currentTimeDisplay.innerText = formatTime(currentTime);
+        lineCountBadge.innerText = `${subtitlesData.length} Lines`;
+
+        renderTranscriptList();
+        renderMarkersTrack();
+        updateExpressions();
+        updatePreview();
+
+        showToast("Previous work restored automatically!");
+        return true;
+    } catch (e) {
+        console.error("Failed to restore session:", e);
+        return false;
+    }
+}
+
+window.addEventListener('beforeunload', (e) => {
+    if (subtitlesData && subtitlesData.length > 0) {
+        autoSaveProject();
+        e.preventDefault();
+        e.returnValue = ''; // Standard trigger for browser "Leave Site?" dialog
+    }
+});
+
         window.onload = function() {
-            rawWordTokens = generateSampleDataFromText(DEFAULT_TRANSCRIPT);
-            rawTextInput.value = DEFAULT_TRANSCRIPT;
-            fetchGitHubFonts(); // Fetches GitHub JSON & sets DIN-NEXT-LT-ARABIC-LIGHT by default
-            applyGrouping();
-            renderMarkersTrack();
-            currentTime = 0.55;
-            timelineSlider.value = currentTime;
-            updatePreview();
+            fetchGitHubFonts();
+
+            // Try restoring previous auto-saved session first
+            const restored = restoreAutoSavedProject();
+
+            // If no previous session exists, load default sample
+            if (!restored) {
+                rawWordTokens = generateSampleDataFromText(DEFAULT_TRANSCRIPT);
+                rawTextInput.value = DEFAULT_TRANSCRIPT;
+                applyGrouping();
+                renderMarkersTrack();
+                currentTime = 0.55;
+                timelineSlider.value = currentTime;
+                updatePreview();
+            }
         };
     </script>
 </body>
